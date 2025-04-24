@@ -5,10 +5,9 @@ import { AuthContext } from '../types/authContext'
 import { getLogger } from '../utils/logger'
 const logger = getLogger()
 
-export function createFactoryAuthContext(mongo: MongoClient) {
+export function createFactoryAuthContext(mongo: MongoClient, apiKey: string) {
     return async (req: import('fastify').FastifyRequest): Promise<AuthContext> => {
-        const apiKey = req.headers['wize-api-key']?.toString().trim()
-
+        
         if (!apiKey) {
             logger.warn('Missing wize-api-key header')
             throw new Error('Missing wize-api-key header')
