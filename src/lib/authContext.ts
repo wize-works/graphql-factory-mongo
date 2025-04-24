@@ -1,15 +1,14 @@
 // src/lib/authContext.ts
 
 import { MongoClient } from 'mongodb'
-import { AuthContext } from '../types/authContext'
 import { getLogger } from '../utils/logger'
 const logger = getLogger()
 
 export async function createFactoryAuthContext(mongo: MongoClient, apiKey: string) {
 
     if (!apiKey) {
-        logger.warn('Missing wize-api-key header')
-        throw new Error('Missing wize-api-key header')
+        logger.warn('Missing wize-api-key header (graphql-factory)')
+        throw new Error('Missing wize-api-key header (graphql-factory)')
     }
 
     const db = mongo.db('wize-identity')
