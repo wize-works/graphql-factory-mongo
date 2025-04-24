@@ -25,7 +25,8 @@ export * from './utils/logger';
 export * from './utils/tracing';
 export * from './utils/requireScope';
 export * from './utils/pluralize';
-export * from './utils/loadSchemas';
+export { loadSchemasFromMongo } from './utils/loadSchemas';
+export { buildMergedSchema } from './schema/merge';
 export * from './lib/authContext';
 
 export { clearTypeCache } from './graphql/typeRegistry';
