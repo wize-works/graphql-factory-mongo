@@ -17,5 +17,5 @@ export function validateMetadata(name: string, metadata: Metadata): void {
         }
     }
 
-    logger.info(`Metadata validation passed for schema '${name}'`);
+    logger.info(`Metadata validation passed for schema '${name}'`)
 }
