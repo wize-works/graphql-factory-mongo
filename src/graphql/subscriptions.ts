@@ -1,53 +1,55 @@
 // src/graphql/subscriptions.ts
 
-import { GraphQLFieldConfigMap } from 'graphql'
-import { createGraphQLType } from './types'
-import { getMetadata } from '../metadata/registry'
-import { pubsub } from '../pubsub'
-import { getLogger } from '../utils/logger'
-import { requireScope } from '../utils/requireScope'
-import { Metadata } from '../metadata/types'
+import { GraphQLFieldConfigMap } from 'graphql';
+import { createGraphQLType } from './types';
+import { pubsub } from '../pubsub';
+import { getLogger } from '../utils/logger';
+import { getTracer } from '../utils/tracing';
+import { requireScope } from '../utils/requireScope';
+import { SchemaKey } from '../metadata/schemaKey';
+import { Metadata } from '../metadata/types';
 
-export function generateSubscriptions(name: string, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
-    const logger = getLogger()
-    const type = createGraphQLType(name, metadata)
-    const fields: GraphQLFieldConfigMap<any, any> = {}
+export function generateSubscriptions(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
+    const logger = getLogger();
+    const tracer = getTracer();
+    const type = createGraphQLType(key, metadata);
+    const fields: GraphQLFieldConfigMap<any, any> = {};
 
     if (metadata.subscriptions?.onCreated) {
-        fields[`on${name}Created`] = {
+        fields[`on${key.name}Created`] = {
             type,
             subscribe: (_, __, context) => {
-                requireScope(context, `${name.toLowerCase()}:subscribe`)
-                logger.info(`Subscribed: on${name}Created`)
-                return pubsub.asyncIterableIterator(`${name}_CREATED`)
+                requireScope(context, `${key.name.toLowerCase()}:subscribe`);
+                logger.info(`Subscribed: on${key.name}Created`);
+                return pubsub.asyncIterableIterator(`${key.name}_CREATED`);
             },
             resolve: (payload: any) => payload
         }
     }
 
     if (metadata.subscriptions?.onUpdated) {
-        fields[`on${name}Updated`] = {
+        fields[`on${key.name}Updated`] = {
             type,
             subscribe: (_, __, context) => {
-                requireScope(context, `${name.toLowerCase()}:subscribe`)
-                logger.info(`Subscribed: on${name}Updated`)
-                return pubsub.asyncIterableIterator(`${name}_UPDATED`)
+                requireScope(context, `${key.name.toLowerCase()}:subscribe`);
+                logger.info(`Subscribed: on${key.name}Updated`);
+                return pubsub.asyncIterableIterator(`${key.name}_UPDATED`);
             },
             resolve: (payload: any) => payload
         }
     }
 
     if (metadata.subscriptions?.onDeleted) {
-        fields[`on${name}Deleted`] = {
+        fields[`on${key.name}Deleted`] = {
             type,
             subscribe: (_, __, context) => {
-                requireScope(context, `${name.toLowerCase()}:subscribe`)
-                logger.info(`Subscribed: on${name}Deleted`)
-                return pubsub.asyncIterableIterator(`${name}_DELETED`)
+                requireScope(context, `${key.name.toLowerCase()}:subscribe`);
+                logger.info(`Subscribed: on${key.name}Deleted`);
+                return pubsub.asyncIterableIterator(`${key.name}_DELETED`);
             },
             resolve: (payload: any) => payload
         }
     }
 
-    return fields
+    return fields;
 }

@@ -6,16 +6,16 @@ export interface ITracer {
 
 export const NoopTracer: ITracer = {
     startSpan(name, fn) {
-        return fn()
+        return fn();
     }
 }
 
 let activeTracer: ITracer = NoopTracer
 
 export function useTracer(tracer: ITracer) {
-    activeTracer = tracer
+    activeTracer = tracer;
 }
 
 export function getTracer(): ITracer {
-    return activeTracer
+    return activeTracer;
 }
