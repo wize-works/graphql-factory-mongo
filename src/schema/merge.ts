@@ -1,10 +1,11 @@
 // src/utils/buildMergedSchema.ts
 
-import { GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { GraphQLFieldConfig, GraphQLFieldConfigMap, GraphQLObjectType, GraphQLSchema } from 'graphql';
 import { createResolvers } from '../graphql/resolvers';
 import { validateMetadata } from '../metadata/validators';
 import { Metadata } from '../metadata/types';
 import { SchemaKey } from '../metadata/schemaKey';
+import { normalizeArgs } from '../utils/normalizeArgs';
 
 export function buildMergedSchema(
     schemas: Array<{ name: string; metadata: Metadata; tenantId: string; clientApp: string }>
@@ -24,22 +25,26 @@ export function buildMergedSchema(
 
         const resolvers = createResolvers(key, s.metadata);
         
-        for (const [fieldName, fieldConfig] of Object.entries(resolvers.query.getFields())) {
-            if (fieldConfig && typeof fieldConfig.args !== 'object' || Array.isArray(fieldConfig.args)) {
-                console.error(`❌ Invalid args for query '${fieldName}':`, fieldConfig.args);
-            }
-        }
-
         allQuerys.push(resolvers.query);
         allMutations.push(resolvers.mutation);
         allSubscriptions.push(resolvers.subscription);
     }
 
-    function mergeFields(types: GraphQLObjectType[]) {
-        return () => types.reduce((acc, type) => ({
-            ...acc,
-            ...type.getFields()
-        }), {});
+    function mergeFields(types: GraphQLObjectType[]): () => GraphQLFieldConfigMap<any, any> {
+        return () => {
+            const merged: GraphQLFieldConfigMap<any, any> = {};
+            for (const type of types) {
+                const fields = type.getFields();
+                for (const [fieldName, fieldConfig] of Object.entries(fields)) {
+                    const fixedField: GraphQLFieldConfig<any, any> = {
+                        ...fieldConfig,
+                        args: normalizeArgs(fieldConfig.args)
+                    };
+                    merged[fieldName] = fixedField;
+                }
+            }
+            return merged;
+        };
     }
     return new GraphQLSchema({
         query: new GraphQLObjectType({ name: 'Query', fields: mergeFields(allQuerys) }),
