@@ -1,50 +1,46 @@
 // src/graphql/inputs.ts
 
-import {
-    GraphQLInputObjectType,
-    GraphQLString,
-    GraphQLFloat,
-    GraphQLBoolean,
-    GraphQLID,
-    GraphQLScalarType,
-    GraphQLInputFieldConfigMap
-} from 'graphql'
-import { GraphQLDateTime } from 'graphql-scalars';
-import { Metadata } from '../metadata/types';
 import { getLogger } from '../utils/logger';
 import { getTracer } from '../utils/tracing';
 
-const scalarMap: Record<string, GraphQLScalarType> = {
-    string: GraphQLString,
-    text: GraphQLString,
-    number: GraphQLFloat,
-    boolean: GraphQLBoolean,
-    uuid: GraphQLID,
-    datetime: GraphQLDateTime,
-    json: GraphQLString // optionally upgrade to GraphQLJSON
-}
+import { GraphQLInputObjectType, GraphQLString, GraphQLID } from 'graphql';
+import { Metadata } from '../metadata/types';
+import { SchemaKey, toSchemaKeyString } from '../metadata/schemaKey';
 
-export function createGraphQLInputType(name: string, metadata: Metadata): GraphQLInputObjectType {
+const inputTypeRegistry = new Map<string, GraphQLInputObjectType>();
+
+export function createGraphQLInputType(name: string, metadata: Metadata, key: SchemaKey): GraphQLInputObjectType {
     const logger = getLogger();
     const tracer = getTracer();
-
-    tracer.startSpan(`inputs.createInputType.${name}`, () => {
-        logger.info(`Creating input type for ${name}`);
-    })
-
-    const fields: GraphQLInputFieldConfigMap = {}
-
-    for (const [fieldName, def] of Object.entries(metadata.fields)) {
-        if (!def.relation) {
-            fields[fieldName] = {
-                type: scalarMap[def.type],
-                description: def.description
-            }
-        }
+    const cacheKey = toSchemaKeyString(key);
+    if (inputTypeRegistry.has(cacheKey)) {
+        logger.info(`Created GraphQLInputType for`, key);
+        return inputTypeRegistry.get(cacheKey)!;
     }
 
-    return new GraphQLInputObjectType({
+    const fields = Object.entries(metadata.fields).reduce((acc, [fieldName, fieldDef]) => {
+        acc[fieldName] = { type: resolveInputType(fieldDef.type) };
+        return acc;
+    }, {} as Record<string, any>);
+
+    const inputType = new GraphQLInputObjectType({
         name,
-        fields: () => fields
+        fields
     });
+
+    inputTypeRegistry.set(cacheKey, inputType);
+    return inputType;
+}
+
+function resolveInputType(type: string) {
+    switch (type) {
+        case 'uuid':
+        case 'id':
+            return GraphQLID;
+        case 'string':
+        case 'text':
+            return GraphQLString;
+        default:
+            throw new Error(`Unsupported input field type: ${type}`);
+    }
 }

@@ -14,12 +14,12 @@ export const ConsoleLogger: ILogger = {
     debug: (msg, meta) => console.debug('[DEBUG]', msg, meta)
 }
 
-let activeLogger: ILogger = ConsoleLogger
+let activeLogger: ILogger = ConsoleLogger;
 
 export function useLogger(logger: ILogger) {
-    activeLogger = logger
+    activeLogger = logger;
 }
 
 export function getLogger(): ILogger {
-    return activeLogger
+    return activeLogger;
 }

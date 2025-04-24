@@ -4,37 +4,36 @@ import {
     GraphQLNonNull,
     GraphQLID,
     GraphQLFieldConfigMap
-} from 'graphql'
-import { getMetadata } from '../metadata/registry';
+} from 'graphql';
 import { createGraphQLType } from './types';
 import { createGraphQLInputType } from './inputs';
 import { getLogger } from '../utils/logger';
 import { getTracer } from '../utils/tracing';
 import { Metadata } from '../metadata/types';
-import { pluralize } from '../utils/pluralize';
+import { SchemaKey } from '../metadata/schemaKey';
 import { requireScope } from '../utils/requireScope';
 
-export function generateMutations(name: string, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
+export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger();
     const tracer = getTracer();
 
-    const type = createGraphQLType(name, metadata);
-    const inputType = createGraphQLInputType(`${name}Input`, metadata);
+    const type = createGraphQLType(key, metadata);
+    const inputType = createGraphQLInputType(`${key.name}Input`, metadata, key);
 
     return {
-        [`create${name}`]: {
+        [`create${key.name}`]: {
             type,
             args: {
                 input: { type: new GraphQLNonNull(inputType) }
             },
             resolve: async (_, args, context) => {
-                requireScope(context, `${name.toLowerCase()}:create`)
-                return await tracer.startSpan(`mutation.${name}.create`, async () => {
+                requireScope(context, `${key.name.toLowerCase()}:create`);
+                return await tracer.startSpan(`mutation.${key.name}.create`, async () => {
                     const db = context.mongo.db();
-                    const collection = db.collection(pluralize(name.toLowerCase()))
+                    const collection = db.collection(`${key.name.toLowerCase()}s`);
 
                     if (metadata.tenantScoped && !context.tenantId) {
-                        throw new Error('Missing tenantId in context')
+                        throw new Error('Missing tenantId in context');
                     }
 
                     const doc = {
@@ -42,29 +41,29 @@ export function generateMutations(name: string, metadata: Metadata): GraphQLFiel
                         ...(metadata.tenantScoped ? { tenantId: context.tenantId } : {}),
                         createdAt: new Date(),
                         createdBy: context.user?.id || 'system'
-                    }
+                    };
 
-                    const result = await collection.insertOne(doc)
-                    logger.info(`Created ${name}`, { id: result.insertedId })
-                    return await collection.findOne({ _id: result.insertedId })
-                })
+                    const result = await collection.insertOne(doc);
+                    logger.info(`Created ${key.name}`, { id: result.insertedId });
+                    return await collection.findOne({ _id: result.insertedId });
+                });
             }
         },
-        [`update${name}`]: {
+        [`update${key.name}`]: {
             type,
             args: {
                 id: { type: new GraphQLNonNull(GraphQLID) },
                 input: { type: new GraphQLNonNull(inputType) }
             },
             resolve: async (_, args, context) => {
-                requireScope(context, `${name.toLowerCase()}:update`)
-                return await tracer.startSpan(`mutation.${name}.update`, async () => {
-                    const db = context.mongo.db()
-                    const collection = db.collection(pluralize(name.toLowerCase()))
+                requireScope(context, `${key.name.toLowerCase()}:update`);
+                return await tracer.startSpan(`mutation.${key.name}.update`, async () => {
+                    const db = context.mongo.db();
+                    const collection = db.collection(`${key.name.toLowerCase()}s`);
 
-                    const filter: Record<string, any> = { _id: args.id }
+                    const filter: Record<string, any> = { _id: args.id };
                     if (metadata.tenantScoped && context.tenantId) {
-                        filter.tenantId = context.tenantId
+                        filter.tenantId = context.tenantId;
                     }
 
                     await collection.updateOne(
@@ -76,32 +75,32 @@ export function generateMutations(name: string, metadata: Metadata): GraphQLFiel
                                 updatedBy: context.user?.id || 'system'
                             }
                         }
-                    )
-                    logger.info(`Updated ${name}`, { id: args.id })
-                    return await collection.findOne({ _id: args.id })
+                    );
+                    logger.info(`Updated ${key.name}`, { id: args.id });
+                    return await collection.findOne({ _id: args.id });
                 })
             }
         },
-        [`delete${name}`]: {
+        [`delete${key.name}`]: {
             type,
             args: {
                 id: { type: new GraphQLNonNull(GraphQLID) }
             },
             resolve: async (_, args, context) => {
-                requireScope(context, `${name.toLowerCase()}:delete`)
-                return await tracer.startSpan(`mutation.${name}.delete`, async () => {
-                    const db = context.mongo.db()
-                    const collection = db.collection(pluralize(name.toLowerCase()))
+                requireScope(context, `${key.name.toLowerCase()}:delete`);
+                return await tracer.startSpan(`mutation.${key.name}.delete`, async () => {
+                    const db = context.mongo.db();
+                    const collection = db.collection(`${key.name.toLowerCase()}s`);
 
-                    const filter: Record<string, any> = { _id: args.id }
+                    const filter: Record<string, any> = { _id: args.id };
                     if (metadata.tenantScoped && context.tenantId) {
-                        filter.tenantId = context.tenantId
+                        filter.tenantId = context.tenantId;
                     }
 
-                    const doc = await collection.findOne(filter)
-                    await collection.deleteOne(filter)
-                    logger.info(`Deleted ${name}`, { id: args.id })
-                    return doc
+                    const doc = await collection.findOne(filter);
+                    await collection.deleteOne(filter);
+                    logger.info(`Deleted ${key.name}`, { id: args.id });
+                    return doc;
                 })
             }
         }

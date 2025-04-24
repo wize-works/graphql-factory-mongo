@@ -1,65 +1,45 @@
 // src/graphql/types.ts
 
-import {
-    GraphQLObjectType,
-    GraphQLString,
-    GraphQLFloat,
-    GraphQLBoolean,
-    GraphQLID,
-    GraphQLScalarType,
-    GraphQLFieldConfigMap
-} from 'graphql'
-import { GraphQLDateTime } from 'graphql-scalars'
-import { getMetadata } from '../metadata/registry'
-import { Metadata } from '../metadata/types'
-import { getLogger } from '../utils/logger'
-import { getTracer } from '../utils/tracing'
+import { getLogger } from '../utils/logger';
 
-const scalarMap: Record<string, GraphQLScalarType> = {
-    string: GraphQLString,
-    text: GraphQLString,
-    number: GraphQLFloat,
-    boolean: GraphQLBoolean,
-    uuid: GraphQLID,
-    datetime: GraphQLDateTime,
-    json: GraphQLString // can extend with GraphQLJSON
-}
+import { GraphQLObjectType, GraphQLString, GraphQLID } from 'graphql';
+import { Metadata } from '../metadata/types';
+import { SchemaKey, toSchemaKeyString } from '../metadata/schemaKey';
+import { getMetadata } from '../metadata/registry';
 
-export function createGraphQLType(name: string, metadata: Metadata): GraphQLObjectType {
-    const logger = getLogger()
-    const tracer = getTracer()
+const typeRegistry = new Map<string, GraphQLObjectType>();
+const logger = getLogger();
 
-    tracer.startSpan(`types.createGraphQLType.${name}`, () => {
-        logger.info(`Generating GraphQLObjectType for ${name}`)
-    })
-
-    const fields: GraphQLFieldConfigMap<any, any> = {}
-
-    for (const [fieldName, def] of Object.entries(metadata.fields)) {
-        if (def.relation) {
-            fields[fieldName] = {
-                type: (() => {
-                    const related = getMetadata(def.relation!.model)
-                    return createGraphQLType(def.relation!.model, related)
-                })(),
-                resolve: async (parent: any, _, context) => {
-                    const db = context.mongo.db()
-                    const collection = db.collection(def.relation!.model.toLowerCase() + 's')
-                    return await collection.findOne({
-                        [def.relation!.foreignField || '_id']: parent[def.relation!.localField || fieldName]
-                    })
-                }
-            }
-        } else {
-            fields[fieldName] = {
-                type: scalarMap[def.type],
-                description: def.description
-            }
-        }
+export function createGraphQLType(key: SchemaKey, metadata: Metadata): GraphQLObjectType {
+    const cacheKey = toSchemaKeyString(key);
+    if (typeRegistry.has(cacheKey)) {
+        return typeRegistry.get(cacheKey)!;
     }
 
-    return new GraphQLObjectType({
-        name,
-        fields: () => fields
-    })
+    const fields = Object.entries(metadata.fields).reduce((acc, [fieldName, fieldDef]) => {
+        acc[fieldName] = { type: resolveGraphQLType(fieldDef.type) }
+        return acc
+    }, {} as Record<string, any>);
+
+    const type = new GraphQLObjectType({
+        name: `${key.name}`,
+        fields
+    });
+
+    logger.info(`Created GraphQLObjectType for`, key);
+    typeRegistry.set(cacheKey, type);
+    return type;
+}
+
+function resolveGraphQLType(type: string) {
+    switch (type) {
+        case 'uuid':
+        case 'id':
+            return GraphQLID;
+        case 'string':
+        case 'text':
+            return GraphQLString;
+        default:
+            throw new Error(`Unsupported field type: ${type}`);
+    }
 }
