@@ -1,0 +1,142 @@
+{
+    "name": "@wizeworks/graphql-factory-mongo",
+    "version": "0.1.0",
+    "description": "Dynamic GraphQL API generation for MongoDB with support for metadata-driven schemas, tracing, logging, and multi-tenant relationships.",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "readmeFilename": "README.md",
+    "private": false,
+    "publishConfig": {
+        "access": "public"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": [
+                "dist/index.d.ts"
+            ]
+        }
+    },
+    "sideEffects": false,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wize-works/graphql-factory-mongo.git"
+    },
+    "keywords": [
+        "graphql",
+        "mongodb",
+        "typescript",
+        "metadata",
+        "multi-tenant",
+        "tracing",
+        "logger"
+    ],
+    "homepage": "https://github.com/wize-works/graphql-factory-mongo#readme",
+    "bugs": {
+        "url": "https://github.com/wize-works/graphql-factory-mongo/issues"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "files": [
+        "dist"
+    ],
+    "peerDependencies": {
+        "graphql": "^15.0.0 || ^16.0.0"
+    },
+    "dependencies": {
+        "@sentry/node": "^7.92.0",
+        "@sentry/profiling-node": "^1.5.0",
+        "graphql-scalars": "^1.24.2",
+        "graphql-subscriptions": "^3.0.0",
+        "mongodb": "^5.7.0"
+    },
+    "devDependencies": {
+        "tsup": "^7.2.0",
+        "typescript": "^5.0.0",
+        "semantic-release": "^21.0.0",
+        "@semantic-release/npm": "^11.0.0",
+        "@semantic-release/github": "^9.0.0"
+    },
+    "tsup": {
+        "entryPoints": [
+            "src/index.ts"
+        ],
+        "format": [
+            "cjs",
+            "esm"
+        ],
+        "dts": true,
+        "sourcemap": true,
+        "minify": false,
+        "clean": true
+    },
+    "eslintConfig": {
+        "extends": [
+            "eslint:recommended",
+            "plugin:@typescript-eslint/recommended"
+        ],
+        "parser": "@typescript-eslint/parser",
+        "plugins": [
+            "@typescript-eslint"
+        ],
+        "rules": {
+            "@typescript-eslint/no-unused-vars": [
+                "error",
+                {
+                    "argsIgnorePattern": "^_"
+                }
+            ],
+            "@typescript-eslint/no-explicit-any": "warn"
+        }
+    },
+    "prettier": {
+        "singleQuote": true,
+        "trailingComma": "all",
+        "tabWidth": 4,
+        "semi": false
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.{js,ts}": [
+            "eslint --fix",
+            "git add"
+        ],
+        "*.{json,md}": [
+            "prettier --write",
+            "git add"
+        ]
+    },
+    "eslintIgnore": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "clean": "rm -rf dist",
+        "semantic-release": "semantic-release"
+    },
+    "release": {
+        "branches": [
+            "main"
+        ],
+        "plugins": [
+            "@semantic-release/commit-analyzer",
+            "@semantic-release/release-notes-generator",
+            "@semantic-release/npm",
+            "@semantic-release/github"
+        ]
+    },
+    "author": "WizeWorks",
+    "license": "MIT"
+}

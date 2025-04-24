@@ -1,0 +1,18 @@
+# Exclude source files
+src/
+*.ts
+*.tsx
+
+# Build artifacts
+dist/
+node_modules/
+*.log
+
+# Local config
+.env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+
