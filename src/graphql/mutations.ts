@@ -5,21 +5,21 @@ import {
     GraphQLID,
     GraphQLFieldConfigMap
 } from 'graphql'
-import { getMetadata } from '../metadata/registry'
-import { createGraphQLType } from './types'
-import { createGraphQLInputType } from './inputs'
-import { getLogger } from '../utils/logger'
-import { getTracer } from '../utils/tracing'
-import { Metadata } from '../metadata/types'
-import { pluralize } from '../utils/pluralize'
-import { requireScope } from '../utils/requireScope'
+import { getMetadata } from '../metadata/registry';
+import { createGraphQLType } from './types';
+import { createGraphQLInputType } from './inputs';
+import { getLogger } from '../utils/logger';
+import { getTracer } from '../utils/tracing';
+import { Metadata } from '../metadata/types';
+import { pluralize } from '../utils/pluralize';
+import { requireScope } from '../utils/requireScope';
 
 export function generateMutations(name: string, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
-    const logger = getLogger()
-    const tracer = getTracer()
+    const logger = getLogger();
+    const tracer = getTracer();
 
-    const type = createGraphQLType(name, metadata)
-    const inputType = createGraphQLInputType(`${name}Input`, metadata)
+    const type = createGraphQLType(name, metadata);
+    const inputType = createGraphQLInputType(`${name}Input`, metadata);
 
     return {
         [`create${name}`]: {
@@ -30,7 +30,7 @@ export function generateMutations(name: string, metadata: Metadata): GraphQLFiel
             resolve: async (_, args, context) => {
                 requireScope(context, `${name.toLowerCase()}:create`)
                 return await tracer.startSpan(`mutation.${name}.create`, async () => {
-                    const db = context.mongo.db()
+                    const db = context.mongo.db();
                     const collection = db.collection(pluralize(name.toLowerCase()))
 
                     if (metadata.tenantScoped && !context.tenantId) {
