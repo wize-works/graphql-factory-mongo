@@ -26,10 +26,10 @@ export async function authContext(req: FastifyRequest, mongo: MongoClient): Prom
     try {
         await db.collection('api_keys').updateOne(
             { key: apiKey },
-            { $set: { last_used_at: new Date() } }
+            { $set: { lastUsedAt: new Date() } }
         );
     } catch (err: any) {
-        logger.warn('⚠️ Failed to update last_used_at');
+        logger.warn('⚠️ Failed to update lastUsedAt');
         logger.error(err as Error);
     }
 
@@ -51,7 +51,8 @@ export async function authContext(req: FastifyRequest, mongo: MongoClient): Prom
         mongo,
         user: { id: userId },
         tenantId: result.tenantId,
-        scopes: result.scopes || []
+        scopes: result.scopes || [],
+        clientApp: result.clientApp,
     };
 }
 

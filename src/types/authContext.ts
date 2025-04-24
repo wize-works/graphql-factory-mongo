@@ -10,5 +10,6 @@ export interface AuthContext {
         [key: string]: any
     }
     tenantId: string
+    clientApp: string
     scopes: string[]
 }
