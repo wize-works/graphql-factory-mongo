@@ -9,10 +9,10 @@ import {
     GraphQLScalarType,
     GraphQLInputFieldConfigMap
 } from 'graphql'
-import { GraphQLDateTime } from 'graphql-scalars'
-import { Metadata } from '../metadata/types'
-import { getLogger } from '../utils/logger'
-import { getTracer } from '../utils/tracing'
+import { GraphQLDateTime } from 'graphql-scalars';
+import { Metadata } from '../metadata/types';
+import { getLogger } from '../utils/logger';
+import { getTracer } from '../utils/tracing';
 
 const scalarMap: Record<string, GraphQLScalarType> = {
     string: GraphQLString,
@@ -25,11 +25,11 @@ const scalarMap: Record<string, GraphQLScalarType> = {
 }
 
 export function createGraphQLInputType(name: string, metadata: Metadata): GraphQLInputObjectType {
-    const logger = getLogger()
-    const tracer = getTracer()
+    const logger = getLogger();
+    const tracer = getTracer();
 
     tracer.startSpan(`inputs.createInputType.${name}`, () => {
-        logger.info(`Creating input type for ${name}`)
+        logger.info(`Creating input type for ${name}`);
     })
 
     const fields: GraphQLInputFieldConfigMap = {}
@@ -46,5 +46,5 @@ export function createGraphQLInputType(name: string, metadata: Metadata): GraphQ
     return new GraphQLInputObjectType({
         name,
         fields: () => fields
-    })
+    });
 }
