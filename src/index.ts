@@ -3,7 +3,7 @@
 import { getLogger, useLogger, ConsoleLogger } from './utils/logger'
 import { getTracer, useTracer, NoopTracer } from './utils/tracing'
 
-// Default to console + no-op unless set
+// Auto-wire default logger and tracer
 useLogger(ConsoleLogger)
 useTracer(NoopTracer)
 
@@ -23,3 +23,6 @@ export * from './graphql/resolvers'
 export * from './pubsub'
 export * from './utils/logger'
 export * from './utils/tracing'
+export * from './utils/requireScope'
+export * from './utils/pluralize'
+export * from './lib/authContext'
