@@ -21,6 +21,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
             },
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.name.toLowerCase()}:read`)
+                console.log('findById: context', context);
                 return await tracer.startSpan(`query.${key.name}.findById`, async () => {
                     const db = context.mongo.db();
                     const collection = db.collection(`${key.name.toLowerCase()}s`);
