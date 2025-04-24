@@ -4,7 +4,7 @@ import { createFactoryAuthContext } from '../lib/authContext';
 import { loadSchemasFromMongo } from '../utils/loadSchemas';
 import { buildMergedSchema } from '../schema/merge';
 
-export const createSchema = async (request: Request, mongo: MongoClient) => {
+export const createServerSchema = async (request: Request, mongo: MongoClient) => {
     const apiKey = request.headers.get('wize-api-key');
     if (!apiKey) throw new Error('Missing Wize API key');
 

@@ -31,3 +31,6 @@ export * from './lib/authContext';
 
 export { clearTypeCache } from './graphql/typeRegistry';
 export { registerSchemaRoutes } from './routes/schema';
+
+export * from './server/context';
+export * from './server/schema';
