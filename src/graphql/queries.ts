@@ -5,8 +5,9 @@ import { createGraphQLType } from './types'
 import { getMetadata } from '../metadata/registry'
 import { getLogger } from '../utils/logger'
 import { getTracer } from '../utils/tracing'
+import { Metadata } from '../metadata/types'
 
-export function generateQueries(name: string, metadata): GraphQLFieldConfigMap<any, any> {
+export function generateQueries(name: string, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger()
     const tracer = getTracer()
     const type = createGraphQLType(name, metadata)

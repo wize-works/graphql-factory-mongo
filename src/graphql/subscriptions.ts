@@ -5,8 +5,9 @@ import { createGraphQLType } from './types'
 import { getMetadata } from '../metadata/registry'
 import { pubsub } from '../pubsub'
 import { getLogger } from '../utils/logger'
+import { Metadata } from '../metadata/types'
 
-export function generateSubscriptions(name: string, metadata): GraphQLFieldConfigMap<any, any> {
+export function generateSubscriptions(name: string, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger()
     const type = createGraphQLType(name, metadata)
     const fields: GraphQLFieldConfigMap<any, any> = {}
@@ -16,7 +17,7 @@ export function generateSubscriptions(name: string, metadata): GraphQLFieldConfi
             type,
             subscribe: () => {
                 logger.info(`Subscribed: on${name}Created`)
-                return pubsub.asyncIterator(`${name}_CREATED`)
+                return pubsub.asyncIterableIterator(`${name}_CREATED`)
             },
             resolve: (payload: any) => payload
         }
@@ -27,7 +28,7 @@ export function generateSubscriptions(name: string, metadata): GraphQLFieldConfi
             type,
             subscribe: () => {
                 logger.info(`Subscribed: on${name}Updated`)
-                return pubsub.asyncIterator(`${name}_UPDATED`)
+                return pubsub.asyncIterableIterator(`${name}_UPDATED`)
             },
             resolve: (payload: any) => payload
         }
@@ -38,7 +39,7 @@ export function generateSubscriptions(name: string, metadata): GraphQLFieldConfi
             type,
             subscribe: () => {
                 logger.info(`Subscribed: on${name}Deleted`)
-                return pubsub.asyncIterator(`${name}_DELETED`)
+                return pubsub.asyncIterableIterator(`${name}_DELETED`)
             },
             resolve: (payload: any) => payload
         }

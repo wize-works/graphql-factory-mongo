@@ -12,8 +12,9 @@ import { createGraphQLType } from './types'
 import { createGraphQLInputType } from './inputs'
 import { getLogger } from '../utils/logger'
 import { getTracer } from '../utils/tracing'
+import { Metadata } from '../metadata/types'
 
-export function generateMutations(name: string, metadata): GraphQLFieldConfigMap<any, any> {
+export function generateMutations(name: string, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger()
     const tracer = getTracer()
 

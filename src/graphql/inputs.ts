@@ -1,8 +1,5 @@
 // src/graphql/inputs.ts
 
-import { getLogger, getTracer } from '../utils/logger'
-
-
 import {
     GraphQLInputObjectType,
     GraphQLString,
@@ -14,6 +11,8 @@ import {
 } from 'graphql'
 import { GraphQLDateTime } from 'graphql-scalars'
 import { Metadata } from '../metadata/types'
+import { getLogger } from '../utils/logger'
+import { getTracer } from '../utils/tracing'
 
 const scalarMap: Record<string, GraphQLScalarType> = {
     string: GraphQLString,
@@ -29,21 +28,23 @@ export function createGraphQLInputType(name: string, metadata: Metadata): GraphQ
     const logger = getLogger()
     const tracer = getTracer()
 
-    return tracer.startSpan(`inputs.createInputType.${name}`, async () => {
-        const fields: GraphQLInputFieldConfigMap = {}
+    tracer.startSpan(`inputs.createInputType.${name}`, () => {
+        logger.info(`Creating input type for ${name}`)
+    })
 
-        for (const [fieldName, def] of Object.entries(metadata.fields)) {
-            if (!def.relation) {
-                fields[fieldName] = {
-                    type: scalarMap[def.type],
-                    description: def.description
-                }
+    const fields: GraphQLInputFieldConfigMap = {}
+
+    for (const [fieldName, def] of Object.entries(metadata.fields)) {
+        if (!def.relation) {
+            fields[fieldName] = {
+                type: scalarMap[def.type],
+                description: def.description
             }
         }
+    }
 
-        return new GraphQLInputObjectType({
-            name,
-            fields: () => fields
-        })
+    return new GraphQLInputObjectType({
+        name,
+        fields: () => fields
     })
 }
