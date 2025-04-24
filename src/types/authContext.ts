@@ -3,12 +3,7 @@
 import { MongoClient } from 'mongodb'
 
 export interface AuthContext {
-    mongo: MongoClient
-    user: {
-        id: string
-        name?: string
-        [key: string]: any
-    }
+    userId: string
     tenantId: string
     clientApp: string
     scopes: string[]

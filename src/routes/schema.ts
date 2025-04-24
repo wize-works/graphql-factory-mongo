@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify';
 import { MongoClient } from 'mongodb';
 import { getLogger } from '../utils/logger';
 import { validateMetadata } from '../metadata/validators';
-import { authContext } from '../lib/authContext';
+import { createFactoryAuthContext } from '../lib/authContext';
 import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 
@@ -19,7 +19,8 @@ export async function registerSchemaRoutes(app: FastifyInstance, mongo: MongoCli
         };
         validateMetadata(name, metadata);
 
-        const { tenantId } = await authContext(req, mongo);
+        const authContext = await createFactoryAuthContext(mongo)(req);
+        const { tenantId } = authContext;
 
         if (!name || !metadata || !tenantId || !clientApp) {
             return reply.status(400).send({ error: 'Missing required fields: name, metadata, clientApp' })
