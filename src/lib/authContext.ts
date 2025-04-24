@@ -32,7 +32,8 @@ export async function createFactoryAuthContext(mongo: MongoClient, apiKey: strin
         userId: '00000000-0000-0000-0000-000000000000',
         tenantId: apiKeyRecord.tenantId,
         clientApp: apiKeyRecord.clientApp,
-        scopes: apiKeyRecord.scopes || []
+        scopes: apiKeyRecord.scopes || [],
+        mongo: mongo
     }
 }
 

@@ -1,6 +1,6 @@
 // src/graphql/queries.ts
 
-import { GraphQLFieldConfigMap, GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLFieldConfigMap, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType } from 'graphql';
 import { createGraphQLType } from './types';
 import { Metadata } from '../metadata/types';
 import { getLogger } from '../utils/logger';
@@ -8,10 +8,19 @@ import { getTracer } from '../utils/tracing';
 import { SchemaKey } from '../metadata/schemaKey';
 import { requireScope } from '../utils/requireScope';
 
+
 export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger();
     const tracer = getTracer();
     const type = createGraphQLType(key, metadata);
+
+    const ListResultType = new GraphQLObjectType({
+        name: `${key.name}ListResult`,
+        fields: {
+            count: { type: GraphQLInt },
+            data: { type: new GraphQLList(type) }
+        }
+    });
 
     return {
         [`find${key.name}ById`]: {
@@ -39,7 +48,8 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
         },
         [`find${key.name}`]: {
             type: new GraphQLList(type),
-            resolve: async (_, __, context) => {
+            resolve: async (_, args, context) => {
+                console.log('findById: context', context);
                 requireScope(context, `${key.name.toLowerCase()}:read`)
                 return await tracer.startSpan(`query.${key.name}.findAll`, async () => {
                     const db = context.mongo.db();
