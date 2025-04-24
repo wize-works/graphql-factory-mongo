@@ -7,6 +7,7 @@ import { validateMetadata } from '../metadata/validators';
 import { createFactoryAuthContext } from '../lib/authContext';
 import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
+import { AuthContext } from '../types/authContext';
 
 export async function registerSchemaRoutes(app: FastifyInstance, mongo: MongoClient) {
     const logger = getLogger();
@@ -18,8 +19,12 @@ export async function registerSchemaRoutes(app: FastifyInstance, mongo: MongoCli
             clientApp: string;
         };
         validateMetadata(name, metadata);
-
-        const authContext = await createFactoryAuthContext(mongo)(req);
+        
+        const apiKey = req.headers['wize-api-key']?.toString().trim();
+        if (!apiKey) {
+            throw new Error('Missing or invalid API key');
+        }
+        const authContext = await createFactoryAuthContext(mongo, apiKey);
         const { tenantId } = authContext;
 
         if (!name || !metadata || !tenantId || !clientApp) {
