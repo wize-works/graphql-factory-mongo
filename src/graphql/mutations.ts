@@ -29,7 +29,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.name.toLowerCase()}:create`);
                 return await tracer.startSpan(`mutation.${key.name}.create`, async () => {
-                    const db = context.mongo.db(process.env.DATABASE_NAME);
+                    const db = context.mongo.db(context.dbName);
                     const collection = db.collection(`${key.name.toLowerCase()}s`);
 
                     if (metadata.tenantScoped && !context.tenantId) {
@@ -58,7 +58,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.name.toLowerCase()}:update`);
                 return await tracer.startSpan(`mutation.${key.name}.update`, async () => {
-                    const db = context.mongo.db(process.env.DATABASE_NAME);
+                    const db = context.mongo.db(context.dbName);
                     const collection = db.collection(`${key.name.toLowerCase()}s`);
 
                     const filter: Record<string, any> = { _id: args.id };
@@ -89,7 +89,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.name.toLowerCase()}:delete`);
                 return await tracer.startSpan(`mutation.${key.name}.delete`, async () => {
-                    const db = context.mongo.db(process.env.DATABASE_NAME);
+                    const db = context.mongo.db(context.dbName);
                     const collection = db.collection(`${key.name.toLowerCase()}s`);
 
                     const filter: Record<string, any> = { _id: args.id };

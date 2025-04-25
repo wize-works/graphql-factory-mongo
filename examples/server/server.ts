@@ -19,8 +19,11 @@ const mongoClient = new MongoClient(MONGO_URI);
         graphqlEndpoint: '/graphql',
         schema: async ({request}) => createServerSchema(request, mongoClient),
         context: async ({request}) => {
-            process.env.DATABASE_NAME = 'wize-comment';
-            return createServerContext(request, mongoClient);
+            const baseContext = await createServerContext(request, mongoClient);
+            return {
+                ...baseContext,
+                dbName: 'wize-comment',
+            };
         },
         graphiql: true,
     });
