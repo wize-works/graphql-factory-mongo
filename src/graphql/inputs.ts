@@ -67,7 +67,7 @@ export function createGraphQLInputType(
         fields
     })
 
-    logger.info(`Created GraphQLInputObjectType for`, key, `mode: ${mode}`)
+    logger.info(`Created GraphQLInputObjectType for`, { key, mode} )
     inputTypeRegistry.set(cacheKey, inputType)
     return inputType
 }

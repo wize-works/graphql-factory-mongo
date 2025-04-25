@@ -1,16 +1,11 @@
-// tsup.config.ts
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-    entry: [
-        'src/**/*.ts',        // <-- compile the library
-        'examples/server/server.ts' // <-- compile the demo server
-    ],
+    entry: ['src/index.ts'],
     outDir: 'dist',
-    format: ['cjs'],
-    target: 'node18',
-    splitting: false,
+    format: ['cjs', 'esm'],
+    dts: true,
     sourcemap: true,
     clean: true,
-    dts: false // no need for .d.ts files for example code
+    target: 'node18'
 });
