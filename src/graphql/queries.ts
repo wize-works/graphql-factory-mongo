@@ -41,8 +41,8 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.name.toLowerCase()}:read`);
                 return await tracer.startSpan(`query.${key.name}.findById`, async () => {
-                    const db = context.mongo.db();
-                    const collection = db.collection(`${key.name.toLowerCase()}s`);
+                    const db = context.mongo.db(process.env.DATABASE_NAME);
+                    const collection = db.collection(`${key.name.toLowerCase()}`);
 
                     const filter: Record<string, any> = { _id: args.id };
                     if (metadata.tenantScoped && context.tenantId) {
@@ -65,9 +65,9 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.name.toLowerCase()}:read`);
                 return await tracer.startSpan(`query.${key.name}.findAll`, async () => {
-                    const db = context.mongo.db();
-                    const collection = db.collection(`${key.name.toLowerCase()}s`);
-
+                    const db = context.mongo.db(process.env.DATABASE_NAME);
+                    const collection = db.collection(`${key.name.toLowerCase()}`);
+                    
                     const mongoFilter = applyMongoFilters(args.filter, metadata);
                     if (metadata.tenantScoped && context.tenantId) {
                         mongoFilter.tenantId = context.tenantId;
