@@ -7,7 +7,9 @@ import {
     GraphQLBoolean,
     GraphQLInt,
     GraphQLFloat,
-    GraphQLEnumType
+    GraphQLEnumType,
+    GraphQLList,
+    GraphQLNonNull
 } from 'graphql'
 import { GraphQLDateTime, GraphQLDate } from 'graphql-scalars'
 import { Metadata } from '../metadata/types'
@@ -17,23 +19,55 @@ import { getLogger } from '../utils/logger'
 const logger = getLogger()
 const inputTypeRegistry = new Map<string, GraphQLInputObjectType>()
 
-export function createGraphQLInputType(name: string, metadata: Metadata, key: SchemaKey): GraphQLInputObjectType {
-    const cacheKey = toSchemaKeyString(key)
+export function createGraphQLInputType(
+    name: string,
+    metadata: Metadata,
+    key: SchemaKey,
+    mode: 'input' | 'filter' | 'sort' = 'input'
+): GraphQLInputObjectType {
+    const cacheKey = `${toSchemaKeyString(key)}:${mode}`
     if (inputTypeRegistry.has(cacheKey)) {
         return inputTypeRegistry.get(cacheKey)!
     }
 
     const fields = Object.entries(metadata.fields).reduce((acc, [fieldName, fieldDef]) => {
-        acc[fieldName] = { type: resolveInputType(fieldDef, fieldName, key) }
+        if (mode === 'sort') {
+            acc[fieldName] = {
+                type: new GraphQLEnumType({
+                    name: `${name}_${fieldName}_SortOrder`,
+                    values: {
+                        ASC: { value: 'asc' },
+                        DESC: { value: 'desc' }
+                    }
+                })
+            }
+        } else if (mode === 'filter') {
+            const baseType = resolveInputType(fieldDef, fieldName, key)
+            acc[fieldName + '_eq'] = { type: baseType }
+            acc[fieldName + '_neq'] = { type: baseType }
+            if (['string', 'text'].includes(fieldDef.type)) {
+                acc[fieldName + '_contains'] = { type: baseType }
+                acc[fieldName + '_startsWith'] = { type: baseType }
+                acc[fieldName + '_endsWith'] = { type: baseType }
+            }
+            if (['int', 'float', 'datetime', 'date'].includes(fieldDef.type)) {
+                acc[fieldName + '_lt'] = { type: baseType }
+                acc[fieldName + '_lte'] = { type: baseType }
+                acc[fieldName + '_gt'] = { type: baseType }
+                acc[fieldName + '_gte'] = { type: baseType }
+            }
+        } else {
+            acc[fieldName] = { type: resolveInputType(fieldDef, fieldName, key) }
+        }
         return acc
     }, {} as Record<string, any>)
 
     const inputType = new GraphQLInputObjectType({
-        name,
+        name: `${name}_${mode}`,
         fields
     })
 
-    logger.info(`Created GraphQLInputObjectType for`, key)
+    logger.info(`Created GraphQLInputObjectType for`, key, `mode: ${mode}`)
     inputTypeRegistry.set(cacheKey, inputType)
     return inputType
 }
@@ -75,3 +109,11 @@ function resolveInputType(
             throw new Error(`Unsupported input field type: ${fieldDef.type}`)
     }
 }
+
+export const PagingInput = new GraphQLInputObjectType({
+    name: 'PagingInput',
+    fields: {
+        limit: { type: GraphQLInt, defaultValue: 20 },
+        offset: { type: GraphQLInt, defaultValue: 0 }
+    }
+})
