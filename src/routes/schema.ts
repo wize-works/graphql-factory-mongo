@@ -1,19 +1,19 @@
 // src/routes/schema.ts
 
-import { FastifyInstance } from 'fastify';
+import { Server } from 'node:http';
 import { MongoClient } from 'mongodb';
 import { getLogger } from '../utils/logger';
 import { validateMetadata } from '../metadata/validators';
-import { createFactoryAuthContext } from '../lib/authContext';
+import { createAuthContext } from '../server/authContext';
 import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 import { AuthContext } from '../types/authContext';
 
-export async function registerSchemaRoutes(app: FastifyInstance, mongo: MongoClient) {
+export async function registerSchemaRoutes(body: { name: string; metadata: Metadata; clientApp: string; }, mongo: MongoClient) {
     const logger = getLogger();
 
-    app.post('/admin/schema', async (req, reply) => {
-        const { name, metadata, clientApp } = req.body as {
+    
+        const { name, metadata, clientApp } = body as {
             name: string;
             metadata: Metadata;
             clientApp: string;
@@ -24,7 +24,7 @@ export async function registerSchemaRoutes(app: FastifyInstance, mongo: MongoCli
         if (!apiKey) {
             throw new Error('Missing or invalid API key');
         }
-        const authContext = await createFactoryAuthContext(mongo, apiKey);
+        const authContext = await createAuthContext(mongo, apiKey);
         const { tenantId } = authContext;
 
         if (!name || !metadata || !tenantId || !clientApp) {

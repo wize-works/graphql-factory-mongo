@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb'
 import { getLogger } from '../utils/logger'
 const logger = getLogger()
 
-export async function createFactoryAuthContext(mongo: MongoClient, apiKey: string) {
+export async function createAuthContext(mongo: MongoClient, apiKey: string) {
     if (!apiKey) {
         logger.warn('Missing wize-api-key header (graphql-factory)')
         throw new Error('Missing wize-api-key header (graphql-factory)')
