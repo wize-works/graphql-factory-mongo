@@ -55,7 +55,7 @@
     },
     "scripts": {
         "build": "tsup",
-        "dev": "tsup --watch --onSuccess \"node dist/examples/server/server.js\"",
+        "dev": "tsx examples/server/server.js",
         "clean": "rm -rf dist",
         "semantic-release": "semantic-release"
     },
