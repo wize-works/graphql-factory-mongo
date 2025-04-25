@@ -45,9 +45,10 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                     const collection = db.collection(`${key.name.toLowerCase()}`);
 
                     const filter: Record<string, any> = { _id: args.id };
-                    if (metadata.tenantScoped && context.tenantId) {
-                        filter.tenantId = context.tenantId;
-                    }
+                    // if (metadata.tenantScoped && context.tenantId) {
+                    //     filter.tenantId = context.tenantId;
+                    // }
+                    filter.tenantId = context.tenantId;
 
                     const result = await collection.findOne(filter);
                     logger.info(`Fetched ${key.name} by ID`, { id: args.id });
@@ -69,9 +70,10 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                     const collection = db.collection(`${key.name.toLowerCase()}`);
                     
                     const mongoFilter = applyMongoFilters(args.filter, metadata);
-                    if (metadata.tenantScoped && context.tenantId) {
-                        mongoFilter.tenantId = context.tenantId;
-                    }
+                    // if (metadata.tenantScoped && context.tenantId) {
+                    //     mongoFilter.tenantId = context.tenantId;
+                    // }
+                    mongoFilter.tenantId = context.tenantId;
 
                     const options: any = {};
                     if (args.sort) {
