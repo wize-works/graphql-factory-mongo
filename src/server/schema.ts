@@ -3,6 +3,7 @@ import { MongoClient } from 'mongodb';
 import { createAuthContext } from './authContext';
 import { loadSchemasFromMongo } from '../utils/loadSchemas';
 import { buildMergedSchema } from '../schema/merge';
+import { enforceSystemFields } from '../metadata/enforcement';
 
 export const createServerSchema = async (request: any, mongo: MongoClient) => {
     
@@ -11,7 +12,7 @@ export const createServerSchema = async (request: any, mongo: MongoClient) => {
 
     const ctx = await createAuthContext(mongo, apiKey);
     const schemas = await loadSchemasFromMongo(mongo, ctx.tenantId, ctx.clientApp);
-
+    
     if (schemas.length === 0) {
         return new GraphQLSchema({
             query: new GraphQLObjectType({
@@ -29,6 +30,7 @@ export const createServerSchema = async (request: any, mongo: MongoClient) => {
     return buildMergedSchema(
         schemas.map((s) => ({
             ...s,
+            metadata: enforceSystemFields(s.metadata),
             tenantId: ctx.tenantId,
             clientApp: ctx.clientApp
         }))

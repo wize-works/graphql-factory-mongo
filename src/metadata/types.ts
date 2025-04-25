@@ -22,6 +22,8 @@ export interface FieldDefinition {
     defaultValue?: any;
     description?: string;
     relation?: RelationDefinition;
+    enum?: string[];
+    systemReserved?: boolean;
 }
 
 export interface Metadata {
