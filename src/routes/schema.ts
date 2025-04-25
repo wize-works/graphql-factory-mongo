@@ -1,30 +1,31 @@
 // src/routes/schema.ts
 
-import { FastifyInstance } from 'fastify';
 import { MongoClient } from 'mongodb';
 import { getLogger } from '../utils/logger';
 import { validateMetadata } from '../metadata/validators';
-import { createFactoryAuthContext } from '../lib/authContext';
+import { createAuthContext } from '../server/authContext';
 import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 import { AuthContext } from '../types/authContext';
 
-export async function registerSchemaRoutes(app: FastifyInstance, mongo: MongoClient) {
+export async function registerSchemaRoutes(app: any, mongo: MongoClient) {
     const logger = getLogger();
-
     app.post('/admin/schema', async (req, reply) => {
+        
         const { name, metadata, clientApp } = req.body as {
             name: string;
             metadata: Metadata;
             clientApp: string;
         };
+        logger.info('Received request to register schema', { name, metadata, clientApp });
         validateMetadata(name, metadata);
         
         const apiKey = req.headers['wize-api-key']?.toString().trim();
+        
         if (!apiKey) {
             throw new Error('Missing or invalid API key');
         }
-        const authContext = await createFactoryAuthContext(mongo, apiKey);
+        const authContext = await createAuthContext(mongo, apiKey);
         const { tenantId } = authContext;
 
         if (!name || !metadata || !tenantId || !clientApp) {

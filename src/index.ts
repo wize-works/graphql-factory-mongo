@@ -27,7 +27,7 @@ export * from './utils/requireScope';
 export * from './utils/pluralize';
 export { loadSchemasFromMongo } from './utils/loadSchemas';
 export { buildMergedSchema } from './schema/merge';
-export * from './lib/authContext';
+export * from './server/authContext';
 
 export { clearTypeCache } from './graphql/typeRegistry';
 export { registerSchemaRoutes } from './routes/schema';
