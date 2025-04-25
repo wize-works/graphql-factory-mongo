@@ -38,9 +38,10 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
 
                     const doc = {
                         ...args.input,
-                        ...(metadata.tenantScoped ? { tenantId: context.tenantId } : {}),
+                        //...(metadata.tenantScoped ? { tenantId: context.tenantId } : {}),
                         createdAt: new Date(),
-                        createdBy: context.user?.id || 'system'
+                        createdBy: context.user?.id || 'system',
+                        tenantId: context.tenantId
                     };
 
                     const result = await collection.insertOne(doc);
@@ -62,9 +63,9 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                     const collection = db.collection(`${key.name.toLowerCase()}s`);
 
                     const filter: Record<string, any> = { _id: args.id };
-                    if (metadata.tenantScoped && context.tenantId) {
-                        filter.tenantId = context.tenantId;
-                    }
+                    // if (metadata.tenantScoped && context.tenantId) {
+                    //     filter.tenantId = context.tenantId;
+                    // }
 
                     await collection.updateOne(
                         filter,
@@ -72,7 +73,8 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                             $set: {
                                 ...args.input,
                                 updatedAt: new Date(),
-                                updatedBy: context.user?.id || 'system'
+                                updatedBy: context.user?.id || 'system',
+                                tenantId: context.tenantId
                             }
                         }
                     );
@@ -93,9 +95,10 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                     const collection = db.collection(`${key.name.toLowerCase()}s`);
 
                     const filter: Record<string, any> = { _id: args.id };
-                    if (metadata.tenantScoped && context.tenantId) {
-                        filter.tenantId = context.tenantId;
-                    }
+                    //if (metadata.tenantScoped && context.tenantId) {
+                    //filter.tenantId = context.tenantId;
+                    //}
+                    filter.tenantId = context.tenantId;
 
                     const doc = await collection.findOne(filter);
                     await collection.deleteOne(filter);
