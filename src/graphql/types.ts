@@ -24,6 +24,10 @@ export function createGraphQLType(key: SchemaKey, metadata: Metadata): GraphQLOb
     }
 
     const fields = Object.entries(metadata.fields).reduce((acc: Record<string, any>, [fieldName, fieldDef]) => {
+        if (fieldDef.systemReserved) {
+            return acc
+        }
+
         acc[fieldName] = { type: resolveGraphQLType(fieldDef, fieldName, key) }
         return acc
     }, {})
