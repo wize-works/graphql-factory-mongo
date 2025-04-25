@@ -1,6 +1,5 @@
 // src/routes/schema.ts
 
-import { Server } from 'node:http';
 import { MongoClient } from 'mongodb';
 import { getLogger } from '../utils/logger';
 import { validateMetadata } from '../metadata/validators';
@@ -9,18 +8,20 @@ import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 import { AuthContext } from '../types/authContext';
 
-export async function registerSchemaRoutes(body: { name: string; metadata: Metadata; clientApp: string; }, mongo: MongoClient) {
+export async function registerSchemaRoutes(app: any, mongo: MongoClient) {
     const logger = getLogger();
-
-    
-        const { name, metadata, clientApp } = body as {
+    app.post('/admin/schema', async (req, reply) => {
+        
+        const { name, metadata, clientApp } = req.body as {
             name: string;
             metadata: Metadata;
             clientApp: string;
         };
+        logger.info('Received request to register schema', { name, metadata, clientApp });
         validateMetadata(name, metadata);
         
         const apiKey = req.headers['wize-api-key']?.toString().trim();
+        
         if (!apiKey) {
             throw new Error('Missing or invalid API key');
         }

@@ -9,9 +9,9 @@ export async function createAuthContext(mongo: MongoClient, apiKey: string) {
         logger.warn('Missing wize-api-key header (graphql-factory)')
         throw new Error('Missing wize-api-key header (graphql-factory)')
     }
-
+    
     const db = mongo.db('wize-identity')
-    const apiKeyRecord = await db.collection('api_keys').findOne({ key: apiKey, isActive: true })
+    const apiKeyRecord = await db.collection('tenants').findOne({ key: apiKey, isActive: true })
 
     if (!apiKeyRecord) {
         logger.warn(`Invalid or disabled API key: ${apiKey}`)
@@ -19,7 +19,7 @@ export async function createAuthContext(mongo: MongoClient, apiKey: string) {
     }
 
     try {
-        await db.collection('api_keys').updateOne(
+        await db.collection('tenants').updateOne(
             { key: apiKey },
             { $set: { last_used_at: new Date() } }
         )
