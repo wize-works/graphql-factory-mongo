@@ -6,11 +6,11 @@ import { validateMetadata } from '../metadata/validators';
 import { createAuthContext } from '../server/authContext';
 import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
-import { AuthContext } from '../types/authContext';
+import { Request, Response } from 'express';
 
 export async function registerSchemaRoutes(app: any, mongo: MongoClient) {
     const logger = getLogger();
-    app.post('/admin/schema', async (req, reply) => {
+    app.post('/admin/schema', async (req: Request, reply: Response) => {
         
         const { name, metadata, clientApp } = req.body as {
             name: string;

@@ -75,12 +75,12 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
 
                     const options: any = {};
                     if (args.sort) {
-                        options.sort = Object.entries(args.sort).reduce((acc, [field, dir]) => {
+                        options.sort = Object.entries(args.sort).reduce<Record<string, 1 | -1>>((acc, [field, dir]) => {
                             acc[field] = dir === 'asc' ? 1 : -1;
                             return acc;
-                        }, {});
+                        }, {})
                     }
-                    
+
                     const cursor = collection.find(mongoFilter, options).collation({ locale: 'en', strength: 2 });
 
                     if (args.paging) {
