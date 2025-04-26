@@ -14,10 +14,10 @@ const mongoClient = new MongoClient(MONGO_URI);
 
 (async () => {
     await mongoClient.connect();
-    
+    console.log(`Connected to MongoDB at ${MONGO_URI}`);
     const yoga = createYoga({
         graphqlEndpoint: '/graphql',
-        schema: async ({request}) => createServerSchema(request, mongoClient),
+        schema: async ({request}) => createServerSchema(request, mongoClient, dbName),
         context: async ({request}) => {
             const baseContext = await createServerContext(request, mongoClient);
             return {
@@ -36,6 +36,6 @@ const mongoClient = new MongoClient(MONGO_URI);
     app.use(yoga.graphqlEndpoint, yoga);
 
     app.listen(port, () => {
-        console.log(`🚀 wize-comment API ready at http://localhost:${port}/graphql`);
+        console.log(`🚀 wize-exammple API ready at http://localhost:${port}/graphql`);
     });
 })();
