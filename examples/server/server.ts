@@ -22,7 +22,7 @@ const mongoClient = new MongoClient(MONGO_URI);
             const baseContext = await createServerContext(request, mongoClient);
             return {
                 ...baseContext,
-                dbName: 'wize-comment',
+                dbName: 'wize-comment', // Use the database name you want to connect to
             };
         },
         graphiql: true,
@@ -31,9 +31,9 @@ const mongoClient = new MongoClient(MONGO_URI);
     const app = express();
     app.use(express.json());
 
-    const schema = registerSchemaRoutes(app, mongoClient);
+    const tables = ['example']; // Add your available tables here
+    registerSchemaRoutes(app, mongoClient, tables);
 
-    // Use Yoga as middleware in Express
     app.use(yoga.graphqlEndpoint, yoga);
 
     app.listen(port, () => {

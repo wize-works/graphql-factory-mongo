@@ -8,15 +8,20 @@ import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 import { Request, Response } from 'express';
 
-export async function registerSchemaRoutes(app: any, mongo: MongoClient) {
+export async function registerSchemaRoutes(app: any, mongo: MongoClient, tables: string[]) {
     const logger = getLogger();
     app.post('/admin/schema', async (req: Request, reply: Response) => {
-        
+
         const { name, metadata, clientApp } = req.body as {
             name: string;
             metadata: Metadata;
             clientApp: string;
         };
+
+        if (!tables.includes(name)) {
+            return reply.status(400).send({ error: `Table ${name} is not in the available tables list` });
+        }
+
         logger.info('Received request to register schema', { name, metadata, clientApp });
         validateMetadata(name, metadata);
         
