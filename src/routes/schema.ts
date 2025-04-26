@@ -8,7 +8,7 @@ import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 import { Request, Response } from 'express';
 
-export async function registerSchemaRoutes(app: any, mongo: MongoClient, tables: string[]) {
+export async function registerSchemaRoutes(app: any, mongo: MongoClient, dbName: string) {
     const logger = getLogger();
     app.post('/admin/schema', async (req: Request, reply: Response) => {
 
@@ -18,8 +18,10 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, tables:
             clientApp: string;
         };
 
+        const tables = await mongo.db('wize-configuration').collection('tables').find({database: dbName}).map((table: any) => table.name).toArray();
+
         if (!tables.includes(name)) {
-            return reply.status(400).send({ error: `Table ${name} is not in the available tables list` });
+            return reply.status(400).send({ error: `Table ${name} is not in the available tables list`, tables });
         }
 
         logger.info('Received request to register schema', { name, metadata, clientApp });
