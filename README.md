@@ -38,7 +38,7 @@ Make sure to set these variables in your `.env` file or your deployment environm
 
 ```env
 PORT=3000
-MONGO_URI=mongodb://localhost:27017/wize-comment
+MONGO_URI=mongodb://localhost:27017/wize-example
 WIZE_API_KEY=your-api-key-here
 ```
 

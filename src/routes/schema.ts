@@ -41,14 +41,15 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, dbName:
         }
 
         const db = mongo.db('wize-configuration')
-        const filter = { name, tenantId, clientApp }
+        const filter = { table: name, tenantId, clientApp }
 
         try {
             await db.collection('schemas').updateOne(
                 filter,
                 {
                     $set: {
-                        name,
+                        database: dbName,
+                        table: name,
                         tenantId,
                         clientApp,
                         metadata,

@@ -5,13 +5,13 @@ import { loadSchemasFromMongo } from '../utils/loadSchemas';
 import { buildMergedSchema } from '../schema/merge';
 import { enforceSystemFields } from '../metadata/enforcement';
 
-export const createServerSchema = async (request: any, mongo: MongoClient) => {
+export const createServerSchema = async (request: any, mongo: MongoClient, dbName: string) => {
     
     const apiKey = request.headers.get('wize-api-key');
     if (!apiKey) throw new Error('Missing Wize API key');
 
     const ctx = await createAuthContext(mongo, apiKey);
-    const schemas = await loadSchemasFromMongo(mongo, ctx.tenantId, ctx.clientApp);
+    const schemas = await loadSchemasFromMongo(mongo, ctx.tenantId, ctx.clientApp, dbName);
     
     if (schemas.length === 0) {
         return new GraphQLSchema({

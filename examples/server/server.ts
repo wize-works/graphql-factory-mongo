@@ -9,15 +9,15 @@ import { createServerSchema, createServerContext, registerSchemaRoutes } from '.
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
-const dbName = process.env.DB_NAME || 'wize-example';
+const dbName = process.env.DB_NAME || 'wize-content';
 const mongoClient = new MongoClient(MONGO_URI);
 
 (async () => {
     await mongoClient.connect();
-    
+    console.log(`Connected to MongoDB at ${MONGO_URI}`);
     const yoga = createYoga({
         graphqlEndpoint: '/graphql',
-        schema: async ({request}) => createServerSchema(request, mongoClient),
+        schema: async ({request}) => createServerSchema(request, mongoClient, dbName),
         context: async ({request}) => {
             const baseContext = await createServerContext(request, mongoClient);
             return {
@@ -36,6 +36,6 @@ const mongoClient = new MongoClient(MONGO_URI);
     app.use(yoga.graphqlEndpoint, yoga);
 
     app.listen(port, () => {
-        console.log(`🚀 wize-comment API ready at http://localhost:${port}/graphql`);
+        console.log(`🚀 wize-exammple API ready at http://localhost:${port}/graphql`);
     });
 })();
