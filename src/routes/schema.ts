@@ -18,10 +18,11 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, dbName:
             clientApp: string;
         };
 
-        const tables = await mongo.db('wize-configuration').collection('tables').find({database: dbName}).map((table: any) => table.name).toArray();
+        const table = await mongo.db('wize-configuration').collection('tables').findOne({database: dbName});
+        const tables = table?.tables || [];
 
         if (!tables.includes(name)) {
-            return reply.status(400).send({ error: `Table ${name} is not in the available tables list`, tables });
+            return reply.status(400).send({ error: `Table '${name}' is not in the available tables list.`, tables });
         }
 
         logger.info('Received request to register schema', { name, metadata, clientApp });
