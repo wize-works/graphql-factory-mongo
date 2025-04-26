@@ -22,10 +22,31 @@ Dynamic GraphQL API generation from metadata definitions — built for MongoDB.
 ```bash
 npm install @wizeworks/graphql-factory-mongo
 ```
+## 🌍 Environment Variables
+
+The following environment variables are required to configure the application:
+
+| Variable       | Description                                      | Default Value                     |
+|----------------|--------------------------------------------------|-----------------------------------|
+| `PORT`         | The port on which the server will run           | `3000`                            |
+| `MONGO_URI`    | The connection string for the MongoDB instance  | `mongodb://localhost:27017/app`   |
+| `WIZE_API_KEY` | The API key used for authentication             | *(must be provided)*              |
+
+Make sure to set these variables in your `.env` file or your deployment environment.
+
+### Example `.env` File
+
+```env
+PORT=3000
+MONGO_URI=mongodb://localhost:27017/wize-comment
+WIZE_API_KEY=your-api-key-here
+```
 
 ---
 
 ## 🛠 Usage
+
+
 
 ```ts
 import { createGraphQLSchema } from '@wizeworks/graphql-factory-mongo'
@@ -153,3 +174,5 @@ npm run semantic-release
 ## 📄 License
 
 MIT © [WizeWorks](https://github.com/wize-works)
+
+---
