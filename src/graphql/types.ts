@@ -79,3 +79,8 @@ function resolveGraphQLType(
             throw new Error(`Unsupported field type: ${fieldDef.type}`)
     }
 }
+
+export function clearTypeRegistry() {
+    typeRegistry.clear()
+    logger.debug?.('Cleared type registry')
+};

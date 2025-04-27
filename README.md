@@ -28,9 +28,10 @@ The following environment variables are required to configure the application:
 
 | Variable       | Description                                      | Default Value                     |
 |----------------|--------------------------------------------------|-----------------------------------|
-| `PORT`         | The port on which the server will run           | `3000`                            |
-| `MONGO_URI`    | The connection string for the MongoDB instance  | `mongodb://localhost:27017/app`   |
-| `WIZE_API_KEY` | The API key used for authentication             | *(must be provided)*              |
+| `PORT`         | The port on which the server will run            | `3000`                            |
+| `MONGO_URI`    | The connection string for the MongoDB instance   | `mongodb://localhost:27017/app`   |
+| `SENTRY_DSN`   | The Sentry URI for sending logs and errors to.   | `###.ingest.us.sentry.io/###`     |
+| `DB_NAME`      | The API key used for authentication              | `wize-example`                    |
 
 Make sure to set these variables in your `.env` file or your deployment environment.
 
@@ -39,7 +40,8 @@ Make sure to set these variables in your `.env` file or your deployment environm
 ```env
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/wize-example
-WIZE_API_KEY=your-api-key-here
+DB_NAME=wize-example
+SENTRY_DSN=https://
 ```
 
 ---
@@ -49,41 +51,71 @@ WIZE_API_KEY=your-api-key-here
 
 
 ```ts
-import { createGraphQLSchema } from '@wizeworks/graphql-factory-mongo'
-import { connectMongo } from '@wizeworks/graphql-factory-mongo'
-import { useLogger, ConsoleLogger } from '@wizeworks/graphql-factory-mongo'
-import { useTracer, NoopTracer } from '@wizeworks/graphql-factory-mongo'
 
-useLogger(ConsoleLogger)
-useTracer(NoopTracer)
+import express from 'express';
+import { MongoClient } from 'mongodb';
+import { createYoga } from 'graphql-yoga';
+import { createServerSchema, createServerContext, registerSchemaRoutes, ILogger } from '@wizeworks/graphql-factory-mongo';
 
-const metadata = {
-  fields: {
-    title: { type: 'string' },
-    body: { type: 'text' },
-    tenantId: { type: 'uuid', required: true },
-    createdAt: { type: 'datetime' }
-  },
-  tenantScoped: true,
-  subscriptions: {
-    onCreated: true
-  }
-}
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/';
+const database = process.env.DB_NAME || 'wize-example';
+const mongoClient = new MongoClient(MONGO_URI);
 
-const schema = createGraphQLSchema('Article', metadata)
-```
+const logger: ILogger = {
+    error: (message: string) => {
+        const date = new Date();
+        const formattedDate = date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        console.error(`[${formattedDate}] ERROR: ${message}`);
+    },
+    warn: (message: string) => {
+        const date = new Date();
+        const formattedDate = date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        console.warn(`[${formattedDate}] WARNING: ${message}`);
+    },
+    info: (message: string) => {
+        const date = new Date();
+        const formattedDate = date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        console.info(`[${formattedDate}] INFO: ${message}`);
+    },
+    debug: (message: string) => {
+        const date = new Date();
+        const formattedDate = date.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        console.debug(`[${formattedDate}] DEBUG: ${message}`);
+    },
+};
 
----
 
-## 🔌 Context Shape
+const start = async () => {
+    await mongoClient.connect();
 
-The GraphQL context must include:
-```ts
-{
-  mongo: MongoClient
-  user?: { id: string }
-  tenantId?: string
-}
+    const yoga = createYoga({
+        graphqlEndpoint: '/graphql',
+        schema: (args) => createServerSchema(args.request, mongoClient,database),
+        context: async ({request}) => {
+            const baseContext = await createServerContext(request, mongoClient);
+            return {
+                ...baseContext,
+                database,
+            };
+        },
+        graphiql: true
+    });
+
+    const app = express();
+    app.use(express.json());
+    
+    const schema = registerSchemaRoutes(app, mongoClient, database);
+
+    // Use Yoga as middleware in Express
+    app.use(yoga.graphqlEndpoint, yoga);
+
+    app.listen(port, () => {
+        console.log(`🚀 wize-example API ready at http://localhost:${port}/graphql`);
+    });
+};
+
+start();
 ```
 
 ---
@@ -92,22 +124,24 @@ The GraphQL context must include:
 
 ```ts
 {
-  fields: {
-    name: { type: 'string', required: true },
-    createdAt: { type: 'datetime' },
-    status: {
-      type: 'uuid',
-      relation: {
-        model: 'Status',
-        type: 'one'
-      }
+    table: "example",
+    metadata: {
+    fields: [
+        {
+            _id: "string",
+            name: {
+                type: "string",
+                required: true,
+            }
+        }
+    ],
+    subscriptions: {
+        onCreated: true,
+        onUpdated: true,
+        onDeleted: true
     }
-  },
-  tenantScoped: true,
-  subscriptions: {
-    onCreated: true,
-    onUpdated: true
-  }
+    },
+    clientApp: "example-client-app"
 }
 ```
 

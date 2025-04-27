@@ -119,4 +119,9 @@ export const PagingInput = new GraphQLInputObjectType({
         limit: { type: GraphQLInt, defaultValue: 20 },
         offset: { type: GraphQLInt, defaultValue: 0 }
     }
-})
+});
+
+export function clearInputRegistry() {
+    inputTypeRegistry.clear()
+    logger.debug?.(`Cleared input type registry`)
+};
