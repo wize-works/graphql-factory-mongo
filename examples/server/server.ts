@@ -27,7 +27,8 @@ const logger: ILogger = {
         graphqlEndpoint: '/graphql',
         schema: async ({request}) => {
             if(!currentSchemas) {
-                currentSchemas = await createServerSchema(request, mongoClient, database);
+                const apiKey: string = request.headers.get('wize-api-key') || '';
+                currentSchemas = await createServerSchema(apiKey, mongoClient, database);
             }
             return currentSchemas;
         },

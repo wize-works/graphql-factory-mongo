@@ -33,7 +33,7 @@ export function registerAdminRoutes(
                 return res.status(400).json({ error: 'Missing tenantId or clientApp' })
             }
 
-            schema = await createServerSchema(req, mongo, database);
+            schema = await createServerSchema(apiKey, mongo, database);
 
             logger.info(`✅ Successfully refreshed schemas for tenant ${tenantId} / app ${clientApp}`)
             return res.json({ success: true })
