@@ -18,6 +18,7 @@ import { requireScope } from '../utils/requireScope';
 import { applyMongoFilters } from '../utils/applyMongoFilters';
 import { capitalizeFirstLetter } from '../utils/capitalize';
 import { pluralize } from '../utils/pluralize';
+import { ObjectId } from 'mongodb';
 
 export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger();
@@ -47,7 +48,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                     const db = context.mongo.db(context.database);
                     const collection = db.collection(`${tableName}`);
 
-                    const filter: Record<string, any> = { _id: args.id };
+                    const filter: Record<string, any> = { _id: new ObjectId(args.id) };
                     filter.tenantId = context.tenantId;
 
                     const result = await collection.findOne(filter);
