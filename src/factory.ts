@@ -13,32 +13,33 @@ import { getTracer } from './utils/tracing';
 
 
 export async function createGraphQLSchema(
-    name: string,
+    table: string,
     metadata: Metadata,
     tenantId: string,
-    clientApp: string
+    clientApp: string,
+    database: string
 ): Promise<GraphQLSchema> {
     const logger = getLogger();
     const tracer = getTracer();
 
-    return await tracer.startSpan(`schema.createGraphQLSchema.${name}`, async () => {
-        validateMetadata(name, metadata);
+    return await tracer.startSpan(`schema.createGraphQLSchema.${table}`, async () => {
+        validateMetadata(table, metadata);
 
-        const key: SchemaKey = { name, tenantId, clientApp };
+        const key: SchemaKey = { table, tenantId, clientApp, database };
         registerMetadata(key, metadata);
 
         const QueryType = new GraphQLObjectType({
-            name: `${name}_Query`,
+            name: `${table}_Query`,
             fields: () => generateQueries(key, metadata)
         });
 
         const MutationType = new GraphQLObjectType({
-            name: `${name}_Mutation`,
+            name: `${table}_Mutation`,
             fields: () => generateMutations(key, metadata)
         });
 
         const SubscriptionType = new GraphQLObjectType({
-            name: `${name}_Subscription`,
+            name: `${table}_Subscription`,
             fields: () => generateSubscriptions(key, metadata)
         });
 

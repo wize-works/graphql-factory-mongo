@@ -33,7 +33,7 @@ export function createGraphQLType(key: SchemaKey, metadata: Metadata): GraphQLOb
     }, {})
 
     const type = new GraphQLObjectType({
-        name: `${key.name}`,
+        name: `${key.table}`,
         fields
     })
 
@@ -69,7 +69,7 @@ function resolveGraphQLType(
                 throw new Error(`Missing or invalid enum values for ${fieldName}`)
             }
             return new GraphQLEnumType({
-                name: `${key.name}_${fieldName}_Enum`,
+                name: `${key.table}_${fieldName}_Enum`,
                 values: fieldDef.values.reduce((acc: Record<string, { value: string }>, val: string) => {
                     acc[val.toUpperCase()] = { value: val }
                     return acc

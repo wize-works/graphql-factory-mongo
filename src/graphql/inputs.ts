@@ -31,6 +31,9 @@ export function createGraphQLInputType(
     }
 
     const fields = Object.entries(metadata.fields).reduce((acc, [fieldName, fieldDef]) => {
+        if (fieldDef.systemReserved) {
+            return acc; // Skip system reserved fields
+        }
         if (mode === 'sort') {
             acc[fieldName] = {
                 type: new GraphQLEnumType({
@@ -67,7 +70,7 @@ export function createGraphQLInputType(
         fields
     })
 
-    logger.info(`Created GraphQLInputObjectType for`, { key, mode} )
+    logger.debug?.(`Created GraphQLInputObjectType for`, { key, mode} )
     inputTypeRegistry.set(cacheKey, inputType)
     return inputType
 }
@@ -99,7 +102,7 @@ function resolveInputType(
                 throw new Error(`Missing or invalid enum values for ${fieldName}`)
             }
             return new GraphQLEnumType({
-                name: `${key.name}_${fieldName}_Enum_Input`,
+                name: `${key.table}_${fieldName}_Enum_Input`,
                 values: fieldDef.values.reduce((acc: Record<string, { value: string }>, val: string) => {
                     acc[val.toUpperCase()] = { value: val }
                     return acc

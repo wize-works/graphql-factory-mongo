@@ -1,11 +1,12 @@
 // src/metadata/schemaKey.ts
 
 export interface SchemaKey {
-    name: string
     tenantId: string
     clientApp: string
+    database: string
+    table: string
 }
 
-export function toSchemaKeyString({ name, tenantId, clientApp }: SchemaKey): string {
-    return JSON.stringify({ name, tenantId, clientApp });
+export function toSchemaKeyString({ table, tenantId, clientApp }: SchemaKey): string {
+    return JSON.stringify({ table, tenantId, clientApp });
 }
