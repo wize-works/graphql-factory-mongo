@@ -10,7 +10,7 @@ const logger = getLogger();
 
 export const createServerSchema = async (request: any, mongo: MongoClient, database: string) => {
 
-    const apiKey = request.headers.get('wize-api-key');
+    const apiKey = request.headers['wize-api-key'];
     if (!apiKey) throw new Error('Missing Wize API key');
 
     const ctx = await createAuthContext(mongo, apiKey);

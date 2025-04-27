@@ -7,13 +7,15 @@ import { createAuthContext } from '../server/authContext';
 import { createGraphQLSchema } from '../factory';
 import { Metadata } from '../metadata/types';
 import { Request, Response } from 'express';
+import { loadSchemasFromMongo } from '../utils/loadSchemas';
 
 export async function registerSchemaRoutes(app: any, mongo: MongoClient, database: string) {
     const logger = getLogger();
+    
     app.post('/admin/schema', async (req: Request, reply: Response) => {
-        
+
         const apiKey = req.headers['wize-api-key']?.toString().trim();
-        
+
         if (!apiKey) {
             logger.warn('Missing API key in request headers.');
             return reply.status(401).send({ error: 'Missing API key in request headers.' });
@@ -25,7 +27,7 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
             clientApp: string;
         };
 
-        const tableCollection = await mongo.db('wize-configuration').collection('tables').findOne({database});
+        const tableCollection = await mongo.db('wize-configuration').collection('tables').findOne({ database });
 
         if (!tableCollection) {
             logger.error(`Database '${database}' not found.`);
@@ -37,20 +39,20 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
         const tableSchema = {
             table: "example",
             metadata: {
-            fields: [
-                {
-                    _id: "string",
-                    name: {
-                        type: "string",
-                        required: true,
+                fields: [
+                    {
+                        _id: "string",
+                        name: {
+                            type: "string",
+                            required: true,
+                        }
                     }
+                ],
+                subscriptions: {
+                    onCreated: true,
+                    onUpdated: true,
+                    onDeleted: true
                 }
-            ],
-            subscriptions: {
-                onCreated: true,
-                onUpdated: true,
-                onDeleted: true
-            }
             },
             clientApp: "example-client-app"
         };
