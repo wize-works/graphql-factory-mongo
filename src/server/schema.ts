@@ -8,9 +8,8 @@ import { getLogger } from '../utils/logger';
 
 const logger = getLogger();
 
-export const createServerSchema = async (request: any, mongo: MongoClient, database: string) => {
+export const createServerSchema = async (apiKey: string, mongo: MongoClient, database: string) => {
 
-    const apiKey = request.headers.get('wize-api-key');
     if (!apiKey) throw new Error('Missing Wize API key');
 
     const ctx = await createAuthContext(mongo, apiKey);
