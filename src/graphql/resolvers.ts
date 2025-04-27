@@ -14,15 +14,15 @@ export function createResolvers(key: SchemaKey, metadata: Metadata): {
 } {
     return {
         query: new GraphQLObjectType({
-            name: `${key.name}_Query`,
+            name: `${key.table}_Query`,
             fields: () => generateQueries(key, metadata)
         }),
         mutation: new GraphQLObjectType({
-            name: `${key.name}_Mutation`,
+            name: `${key.table}_Mutation`,
             fields: () => generateMutations(key, metadata)
         }),
         subscription: new GraphQLObjectType({
-            name: `${key.name}_Subscription`,
+            name: `${key.table}_Subscription`,
             fields: () => generateSubscriptions(key, metadata)
         })
     };

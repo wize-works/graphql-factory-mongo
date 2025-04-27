@@ -11,9 +11,9 @@ export async function createAuthContext(mongo: MongoClient, apiKey: string) {
     }
     
     const db = mongo.db('wize-identity')
-    const apiKeyRecord = await db.collection('tenants').findOne({ key: apiKey, isActive: true })
+    const tenant = await db.collection('tenants').findOne({ key: apiKey, isActive: true })
 
-    if (!apiKeyRecord) {
+    if (!tenant) {
         logger.warn(`Invalid or disabled API key: ${apiKey}`)
         throw new Error('Invalid or disabled API key')
     }
@@ -30,9 +30,9 @@ export async function createAuthContext(mongo: MongoClient, apiKey: string) {
 
     return {
         userId: '00000000-0000-0000-0000-000000000000',
-        tenantId: apiKeyRecord.tenantId,
-        clientApp: apiKeyRecord.clientApp,
-        scopes: apiKeyRecord.scopes || [],
+        tenantId: tenant.tenantId,
+        clientApp: tenant.clientApp,
+        scopes: tenant.scopes || [],
         mongo: mongo
     }
 }

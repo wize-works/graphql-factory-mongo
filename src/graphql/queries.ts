@@ -16,16 +16,18 @@ import { getTracer } from '../utils/tracing';
 import { SchemaKey } from '../metadata/schemaKey';
 import { requireScope } from '../utils/requireScope';
 import { applyMongoFilters } from '../utils/applyMongoFilters';
+import { capitalizeFirstLetter } from '../utils/capitalize';
+import { pluralize } from '../utils/pluralize';
 
 export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger();
     const tracer = getTracer();
     const type = createGraphQLType(key, metadata);
-    const filterType = createGraphQLInputType(key.name, metadata, key, 'filter');
-    const sortType = createGraphQLInputType(key.name, metadata, key, 'sort');
+    const filterType = createGraphQLInputType(key.table, metadata, key, 'filter');
+    const sortType = createGraphQLInputType(key.table, metadata, key, 'sort');
 
     const ListResultType = new GraphQLObjectType({
-        name: `${key.name}ListResult`,
+        name: `${key.table}ListResult`,
         fields: {
             count: { type: GraphQLInt },
             data: { type: new GraphQLList(type) }
@@ -33,30 +35,27 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
     });
 
     return {
-        [`find${key.name}ById`]: {
+        [`find${capitalizeFirstLetter(key.table)}ById`]: {
             type,
             args: {
                 id: { type: new GraphQLNonNull(GraphQLID) }
             },
             resolve: async (_, args, context) => {
-                requireScope(context, `${key.name.toLowerCase()}:read`);
-                return await tracer.startSpan(`query.${key.name}.findById`, async () => {
-                    const db = context.mongo.db(context.dbName);
-                    const collection = db.collection(`${key.name.toLowerCase()}`);
+                requireScope(context, `${key.table.toLowerCase()}:read`);
+                return await tracer.startSpan(`query.${key.table}.findById`, async () => {
+                    const db = context.mongo.db(context.database);
+                    const collection = db.collection(`${key.table.toLowerCase()}`);
 
                     const filter: Record<string, any> = { _id: args.id };
-                    // if (metadata.tenantScoped && context.tenantId) {
-                    //     filter.tenantId = context.tenantId;
-                    // }
                     filter.tenantId = context.tenantId;
 
                     const result = await collection.findOne(filter);
-                    logger.info(`Fetched ${key.name} by ID`, { id: args.id });
+                    logger.info(`Fetched ${key.table} by ID`, { id: args.id });
                     return result;
                 });
             }
         },
-        [`find${key.name}`]: {
+        [`find${pluralize(capitalizeFirstLetter(key.table))}`]: {
             type: ListResultType,
             args: {
                 filter: { type: filterType },
@@ -64,15 +63,12 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                 paging: { type: PagingInput }
             },
             resolve: async (_, args, context) => {
-                requireScope(context, `${key.name.toLowerCase()}:read`);
-                return await tracer.startSpan(`query.${key.name}.findAll`, async () => {
-                    const db = context.mongo.db(context.dbName);
-                    const collection = db.collection(`${key.name.toLowerCase()}`);
+                requireScope(context, `${key.table.toLowerCase()}:read`);
+                return await tracer.startSpan(`query.${key.table}.findAll`, async () => {
+                    const db = context.mongo.db(context.database);
+                    const collection = db.collection(`${key.table.toLowerCase()}`);
                     
                     const mongoFilter = applyMongoFilters(args.filter, metadata);
-                    // if (metadata.tenantScoped && context.tenantId) {
-                    //     mongoFilter.tenantId = context.tenantId;
-                    // }
                     mongoFilter.tenantId = context.tenantId;
 
                     const options: any = {};
@@ -95,7 +91,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                         collection.countDocuments(mongoFilter)
                     ]);
 
-                    logger.info(`Fetched ${data.length} ${key.name}`, { count });
+                    logger.info(`Fetched ${data.length} ${key.table}`, { count });
                     return { count, data };
                 });
             }
