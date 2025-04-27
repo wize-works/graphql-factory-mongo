@@ -35,13 +35,15 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
         const tables = tableCollection?.tables || [];
 
         const tableSchema = {
-            table: "string",
+            table: "example",
             metadata: {
             fields: [
                 {
-                name: "string",
-                type: "string",
-                required: "boolean"
+                    _id: "string",
+                    name: {
+                        type: "string",
+                        required: true,
+                    }
                 }
             ],
             subscriptions: {
@@ -50,7 +52,7 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
                 onDeleted: true
             }
             },
-            clientApp: "string"
+            clientApp: "example-client-app"
         };
 
         if (!tables.includes(table)) {

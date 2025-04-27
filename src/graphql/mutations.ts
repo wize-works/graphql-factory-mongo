@@ -14,6 +14,7 @@ import { SchemaKey } from '../metadata/schemaKey';
 import { requireScope } from '../utils/requireScope';
 import { capitalizeFirstLetter } from '../utils/capitalize';
 import { pluralize } from '../utils/pluralize';
+import { ObjectId } from 'mongodb';
 
 export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger();
@@ -65,7 +66,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                     const db = context.mongo.db(context.database);
                     const collection = db.collection(`${tableName}`);
 
-                    const filter: Record<string, any> = { _id: args.id };
+                    const filter: Record<string, any> = { _id: new ObjectId(args.id) };
                     // if (metadata.tenantScoped && context.tenantId) {
                     //     filter.tenantId = context.tenantId;
                     // }
@@ -97,7 +98,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                     const db = context.mongo.db(context.database);
                     const collection = db.collection(`${tableName}`);
 
-                    const filter: Record<string, any> = { _id: args.id };
+                    const filter: Record<string, any> = { _id: new ObjectId(args.id) };
                     //if (metadata.tenantScoped && context.tenantId) {
                     //filter.tenantId = context.tenantId;
                     //}
