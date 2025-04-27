@@ -13,10 +13,12 @@ import { Metadata } from '../metadata/types';
 import { SchemaKey } from '../metadata/schemaKey';
 import { requireScope } from '../utils/requireScope';
 import { capitalizeFirstLetter } from '../utils/capitalize';
+import { pluralize } from '../utils/pluralize';
 
 export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFieldConfigMap<any, any> {
     const logger = getLogger();
     const tracer = getTracer();
+    const tableName = pluralize(key.table.toLowerCase());
 
     const type = createGraphQLType(key, metadata);
     const inputType = createGraphQLInputType(`${key.table}Input`, metadata, key);
@@ -31,7 +33,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                 requireScope(context, `${key.table.toLowerCase()}:create`);
                 return await tracer.startSpan(`mutation.${key.table}.create`, async () => {
                     const db = context.mongo.db(context.database);
-                    const collection = db.collection(`${key.table.toLowerCase()}s`);
+                    const collection = db.collection(`${tableName}s`);
 
                     if (metadata.tenantScoped && !context.tenantId) {
                         throw new Error('Missing tenantId in context');
@@ -61,7 +63,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                 requireScope(context, `${key.table.toLowerCase()}:update`);
                 return await tracer.startSpan(`mutation.${key.table}.update`, async () => {
                     const db = context.mongo.db(context.database);
-                    const collection = db.collection(`${key.table.toLowerCase()}s`);
+                    const collection = db.collection(`${tableName}s`);
 
                     const filter: Record<string, any> = { _id: args.id };
                     // if (metadata.tenantScoped && context.tenantId) {
@@ -93,7 +95,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                 requireScope(context, `${key.table.toLowerCase()}:delete`);
                 return await tracer.startSpan(`mutation.${key.table}.delete`, async () => {
                     const db = context.mongo.db(context.database);
-                    const collection = db.collection(`${key.table.toLowerCase()}s`);
+                    const collection = db.collection(`${tableName}s`);
 
                     const filter: Record<string, any> = { _id: args.id };
                     //if (metadata.tenantScoped && context.tenantId) {

@@ -25,6 +25,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
     const type = createGraphQLType(key, metadata);
     const filterType = createGraphQLInputType(key.table, metadata, key, 'filter');
     const sortType = createGraphQLInputType(key.table, metadata, key, 'sort');
+    const tableName = pluralize(key.table.toLowerCase());
 
     const ListResultType = new GraphQLObjectType({
         name: `${key.table}ListResult`,
@@ -44,7 +45,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                 requireScope(context, `${key.table.toLowerCase()}:read`);
                 return await tracer.startSpan(`query.${key.table}.findById`, async () => {
                     const db = context.mongo.db(context.database);
-                    const collection = db.collection(`${key.table.toLowerCase()}`);
+                    const collection = db.collection(`${tableName}`);
 
                     const filter: Record<string, any> = { _id: args.id };
                     filter.tenantId = context.tenantId;
@@ -66,7 +67,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                 requireScope(context, `${key.table.toLowerCase()}:read`);
                 return await tracer.startSpan(`query.${key.table}.findAll`, async () => {
                     const db = context.mongo.db(context.database);
-                    const collection = db.collection(`${key.table.toLowerCase()}`);
+                    const collection = db.collection(`${tableName}`);
                     
                     const mongoFilter = applyMongoFilters(args.filter, metadata);
                     mongoFilter.tenantId = context.tenantId;
