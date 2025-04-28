@@ -91,12 +91,17 @@ function resolveInputType(
             return GraphQLDateTime
         case 'date':
             return GraphQLDate
+        case 'time':
+            return GraphQLString // Time is treated as string for input
         case 'boolean':
             return GraphQLBoolean
         case 'int':
             return GraphQLInt
         case 'float':
             return GraphQLFloat
+        case 'decimal':
+            case 'double':
+            return GraphQLFloat // Decimal/Double is treated as float for input
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
                 throw new Error(`Missing or invalid enum values for ${fieldName}`)
