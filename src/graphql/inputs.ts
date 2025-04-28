@@ -42,10 +42,10 @@ export function createGraphQLInputType(
                         ASC: { value: 'asc' },
                         DESC: { value: 'desc' }
                     }
-                })
+                }),
             }
         } else if (mode === 'filter') {
-            const baseType = resolveInputType(fieldDef, fieldName, key)
+            const baseType = resolveInputType(fieldDef, fieldName, key, mode)
             acc[fieldName + '_eq'] = { type: baseType }
             acc[fieldName + '_neq'] = { type: baseType }
             if (['string', 'text'].includes(fieldDef.type)) {
@@ -60,7 +60,7 @@ export function createGraphQLInputType(
                 acc[fieldName + '_gte'] = { type: baseType }
             }
         } else {
-            acc[fieldName] = { type: resolveInputType(fieldDef, fieldName, key) }
+            acc[fieldName] = { type: resolveInputType(fieldDef, fieldName, key, mode) }
         }
         return acc
     }, {} as Record<string, any>)
@@ -70,7 +70,7 @@ export function createGraphQLInputType(
         fields
     })
 
-    logger.debug?.(`Created GraphQLInputObjectType for`, { key, mode} )
+    //logger.debug?.(`Created GraphQLInputObjectType for`, { key, mode} )
     inputTypeRegistry.set(cacheKey, inputType)
     return inputType
 }
@@ -78,12 +78,14 @@ export function createGraphQLInputType(
 function resolveInputType(
     fieldDef: any,
     fieldName: string,
-    key: SchemaKey
+    key: SchemaKey,
+    mode: 'input' | 'filter' | 'sort'
 ) {
     switch (fieldDef.type) {
         case 'uuid':
         case 'id':
             return GraphQLID
+        case 'json':
         case 'string':
         case 'text':
             return GraphQLString
@@ -96,20 +98,29 @@ function resolveInputType(
         case 'boolean':
             return GraphQLBoolean
         case 'int':
+        case 'integer':
+        case 'number':
             return GraphQLInt
         case 'float':
             return GraphQLFloat
         case 'decimal':
-            case 'double':
+        case 'double':
             return GraphQLFloat // Decimal/Double is treated as float for input
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
                 throw new Error(`Missing or invalid enum values for ${fieldName}`)
             }
+            const enumSuffix =
+                mode === 'filter' ? '_Filter' :
+                mode === 'sort' ? '_Sort' :
+                mode === 'input' ? '_Input' :
+                '';
+
+
             return new GraphQLEnumType({
-                name: `${key.table}_${fieldName}_Enum_Input`,
+                name: `${key.table}_${fieldName}_Enum_Input${enumSuffix}`,
                 values: fieldDef.values.reduce((acc: Record<string, { value: string }>, val: string) => {
-                    acc[val.toUpperCase()] = { value: val }
+                    acc[val.trim().replace(' ', '_').toLowerCase()] = { value: val };
                     return acc
                 }, {} as Record<string, { value: string }>)
             })

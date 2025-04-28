@@ -5,6 +5,7 @@ export type FieldType =
     | 'text'
     | 'number'
     | 'integer'
+    | 'int'
     | 'float'
     | 'double'
     | 'decimal'
@@ -14,7 +15,9 @@ export type FieldType =
     | 'boolean'
     | 'datetime'
     | 'uuid'
-    | 'json';
+    | 'id'
+    | 'json'
+    | 'enum';
 
 export interface RelationDefinition {
     model: string;

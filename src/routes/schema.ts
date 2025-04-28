@@ -17,7 +17,7 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
         const apiKey = req.headers['wize-api-key']?.toString().trim();
 
         if (!apiKey) {
-            logger.warn('Missing API key in request headers.');
+            logger.warn?.('Missing API key in request headers.');
             return reply.status(401).send({ error: 'Missing API key in request headers.' });
         }
 
@@ -30,7 +30,7 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
         const tableCollection = await mongo.db('wize-configuration').collection('tables').findOne({ database });
 
         if (!tableCollection) {
-            logger.error(`Database '${database}' not found.`);
+            logger.error?.(`Database '${database}' not found.`);
             return reply.status(400).send({ error: `Database '${database}' not found.` });
         }
 
@@ -58,18 +58,18 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
         };
 
         if (!tables.includes(table)) {
-            logger.warn(`Table '${table}' is not in the available tables list in the '${database}' database.`);
+            logger.warn?.(`Table '${table}' is not in the available tables list in the '${database}' database.`);
             return reply.status(400).send({ error: `Table '${table}' is not in the available tables list in the '${database}' database.`, tables, "Example Schema": tableSchema });
         }
 
-        logger.info('Received request to register schema', { table, metadata, clientApp, database });
+        logger.info?.('Received request to register schema', { table, metadata, clientApp, database });
         validateMetadata(table, metadata);
 
         const authContext = await createAuthContext(mongo, apiKey);
         const { tenantId } = authContext;
 
         if (!table || !metadata || !tenantId || !clientApp || !database) {
-            logger.warn('Missing required fields: table, metadata, tenantId, clientApp, database');
+            logger.warn?.('Missing required fields: table, metadata, tenantId, clientApp, database');
             return reply.status(400).send({ error: 'Missing required fields: table, metadata, clientApp, database' })
         }
 
@@ -93,11 +93,11 @@ export async function registerSchemaRoutes(app: any, mongo: MongoClient, databas
             );
 
             await createGraphQLSchema(table, metadata, tenantId, clientApp, database);
-            logger.info(`Schema registered successfully`, { table, tenantId, clientApp });
+            logger.info?.(`Schema registered successfully`, { table, tenantId, clientApp });
 
             return reply.status(200).send({ message: 'Schema registered successfully' });
         } catch (err) {
-            logger.error(err as Error)
+            logger.error?.(err as Error)
             return reply.status(500).send({
                 error: 'Failed to register schema',
                 details: err instanceof Error ? err.message : String(err)

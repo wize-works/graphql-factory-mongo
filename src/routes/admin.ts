@@ -29,16 +29,16 @@ export function registerAdminRoutes(
             const { tenantId, clientApp } = authContext
 
             if (!tenantId || !clientApp) {
-                logger.warn('Refresh request missing tenant or clientApp')
+                logger.warn?.('Refresh request missing tenant or clientApp')
                 return res.status(400).json({ error: 'Missing tenantId or clientApp' })
             }
 
             schema = await createServerSchema(apiKey, mongo, database);
 
-            logger.info(`✅ Successfully refreshed schemas for tenant ${tenantId} / app ${clientApp}`)
+            logger.info?.(`✅ Successfully refreshed schemas for tenant ${tenantId} / app ${clientApp}`)
             return res.json({ success: true })
         } catch (err: any) {
-            logger.error('❌ Failed to refresh schemas', err)
+            logger.error?.('❌ Failed to refresh schemas', err)
             return res.status(500).json({ error: err.message })
         }
     })

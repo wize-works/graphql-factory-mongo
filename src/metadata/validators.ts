@@ -4,7 +4,7 @@ import { Metadata, FieldType } from './types';
 import { getLogger } from '../utils/logger';
 
 const allowedTypes: FieldType[] = [
-    'string', 'text', 'number', 'integer', 'float', 'double', 'decimal', 'date', 'time', 'timestamp', 'boolean', 'datetime', 'uuid', 'json'
+    'string', 'text', 'json', 'number', 'integer', 'int', 'float', 'double', 'decimal', 'datetime', 'date', 'time', 'timestamp', 'boolean', 'uuid', 'enum'
 ];
 
 export function validateMetadata(name: string, metadata: Metadata): void {
@@ -12,10 +12,10 @@ export function validateMetadata(name: string, metadata: Metadata): void {
 
     for (const [field, def] of Object.entries(metadata.fields)) {
         if (!allowedTypes.includes(def.type)) {
-            logger.error(`Invalid type '${def.type}' for field '${field}' in schema '${name}'`);
+            logger.error?.(`Invalid type '${def.type}' for field '${field}' in schema '${name}'`);
             throw new Error(`Invalid type '${def.type}' for field '${field}' in schema '${name}'`);
         }
     }
 
-    logger.info(`Metadata validation passed for schema '${name}'`)
+    logger.info?.(`Metadata validation passed for schema '${name}'`)
 }
