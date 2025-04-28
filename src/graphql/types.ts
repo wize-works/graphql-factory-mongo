@@ -37,7 +37,7 @@ export function createGraphQLType(key: SchemaKey, metadata: Metadata): GraphQLOb
         fields
     })
 
-    logger.info(`Created GraphQLObjectType for`, key)
+    logger.info?.(`Created GraphQLObjectType for`, key)
     typeRegistry.set(cacheKey, type)
     return type
 }
@@ -50,37 +50,47 @@ function resolveGraphQLType(
     switch (fieldDef.type) {
         case 'uuid':
         case 'id':
-            return GraphQLID
+            return GraphQLID;
+        case 'json':
         case 'string':
         case 'text':
-            return GraphQLString
+            return GraphQLString;
         case 'datetime':
-            return GraphQLDateTime
+            return GraphQLDateTime;
         case 'date':
-            return GraphQLDate
+            return GraphQLDate;
+        case 'time':
+            return GraphQLString;
         case 'boolean':
-            return GraphQLBoolean
+            return GraphQLBoolean;
+        case 'number':
+        case 'integer':
         case 'int':
-            return GraphQLInt
+            return GraphQLInt;
         case 'float':
-            return GraphQLFloat
+        case 'double':
+        case 'decimal':
+            return GraphQLFloat;
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
-                throw new Error(`Missing or invalid enum values for ${fieldName}`)
+                throw new Error(`Missing or invalid enum values for ${fieldName}`);
             }
+
+            const enumSuffix = fieldDef.modeSuffix ? `_${fieldDef.modeSuffix}` : '';
+
             return new GraphQLEnumType({
-                name: `${key.table}_${fieldName}_Enum`,
+                name: `${key.table}_${fieldName}_Enum${enumSuffix}`,
                 values: fieldDef.values.reduce((acc: Record<string, { value: string }>, val: string) => {
-                    acc[val.toUpperCase()] = { value: val }
-                    return acc
+                    acc[val.trim().replace(' ', '_').toLowerCase()] = { value: val };
+                    return acc;
                 }, {})
-            })
+            });
         default:
-            throw new Error(`Unsupported field type: ${fieldDef.type}`)
+            throw new Error(`Unsupported field type: ${fieldDef.type}`);
     }
 }
 
 export function clearTypeRegistry() {
-    typeRegistry.clear()
-    logger.debug?.('Cleared type registry')
+    typeRegistry.clear();
+    logger.debug?.('Cleared type registry');
 };

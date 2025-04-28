@@ -52,7 +52,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                     filter.tenantId = context.tenantId;
 
                     const result = await collection.findOne(filter);
-                    logger.info(`Fetched ${key.table} by ID`, { id: args.id });
+                    logger.info?.(`Fetched ${key.table} by ID`, { id: args.id });
                     return result;
                 });
             }
@@ -93,7 +93,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                         collection.countDocuments(mongoFilter)
                     ]);
 
-                    logger.info(`Fetched ${data.length} ${key.table}`, { count });
+                    logger.info?.(`Fetched ${data.length} ${key.table}`, { count });
                     return { count, data };
                 });
             }

@@ -49,7 +49,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                     };
 
                     const result = await collection.insertOne(doc);
-                    logger.info(`Created ${key.table}`, { id: result.insertedId });
+                    logger.info?.(`Created ${key.table}`, { id: result.insertedId });
                     return await collection.findOne({ _id: result.insertedId });
                 });
             }
@@ -82,7 +82,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
                             }
                         }
                     );
-                    logger.info(`Updated ${key.table}`, { id: args.id });
+                    logger.info?.(`Updated ${key.table}`, { id: args.id });
                     return await collection.findOne({ _id: args.id });
                 })
             }
@@ -106,7 +106,7 @@ export function generateMutations(key: SchemaKey, metadata: Metadata): GraphQLFi
 
                     const doc = await collection.findOne(filter);
                     await collection.deleteOne(filter);
-                    logger.info(`Deleted ${key.table}`, { id: args.id });
+                    logger.info?.(`Deleted ${key.table}`, { id: args.id });
                     return doc;
                 })
             }

@@ -7,7 +7,7 @@ const logger = getLogger();
 
 export function requireScope(context: AuthContext, scope: string) {
     if (!context.scopes?.includes(scope)) {
-        logger.warn(`Unauthorized: Missing scope '${scope}'`);
+        logger.warn?.(`Unauthorized: Missing scope '${scope}'`);
         throw new Error(`Unauthorized: Missing scope '${scope}'`);
     }
 }

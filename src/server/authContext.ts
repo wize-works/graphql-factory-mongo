@@ -6,7 +6,7 @@ const logger = getLogger()
 
 export async function createAuthContext(mongo: MongoClient, apiKey: string) {
     if (!apiKey) {
-        logger.warn('Missing wize-api-key header (graphql-factory)')
+        logger.warn?.('Missing wize-api-key header (graphql-factory)')
         throw new Error('Missing wize-api-key header (graphql-factory)')
     }
     
@@ -14,7 +14,7 @@ export async function createAuthContext(mongo: MongoClient, apiKey: string) {
     const tenant = await db.collection('tenants').findOne({ key: apiKey, isActive: true })
 
     if (!tenant) {
-        logger.warn(`Invalid or disabled API key: ${apiKey}`)
+        logger.warn?.(`Invalid or disabled API key: ${apiKey}`)
         throw new Error('Invalid or disabled API key')
     }
 
@@ -24,8 +24,8 @@ export async function createAuthContext(mongo: MongoClient, apiKey: string) {
             { $set: { last_used_at: new Date() } }
         )
     } catch (updateError: any) {
-        logger.warn('⚠️ Failed to update last_used_at:')
-        logger.error(updateError)
+        logger.warn?.('⚠️ Failed to update last_used_at:')
+        logger.error?.(updateError)
     }
 
     return {

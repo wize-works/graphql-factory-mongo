@@ -59,7 +59,7 @@ export function buildMergedSchema(
         });
     }
     catch (error) {
-        logger.error('Error building merged schema', { error });
+        logger.error?.('Error building merged schema', { error });
         if (error instanceof Error) {
             throw new Error(`Failed to build merged schema: ${error.message}`);
         } else {

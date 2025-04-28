@@ -17,7 +17,7 @@ export const createServerSchema = async (apiKey: string, mongo: MongoClient, dat
     const schemas = await loadSchemasFromMongo(mongo, ctx.tenantId, ctx.clientApp, database);
 
     if (!schemas) {
-        logger.warn(`No schemas found for the provided apiKey: ${apiKey} and clientApp.`);
+        logger.warn?.(`No schemas found for the provided apiKey: ${apiKey} and clientApp.`);
     }
 
     if (schemas.length === 0) {

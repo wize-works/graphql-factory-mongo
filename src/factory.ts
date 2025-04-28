@@ -43,7 +43,7 @@ export async function createGraphQLSchema(
             fields: () => generateSubscriptions(key, metadata)
         });
 
-        logger.info(`GraphQL schema created for`, key);
+        logger.info?.(`GraphQL schema created for`, key);
 
         return new GraphQLSchema({
             query: QueryType,
