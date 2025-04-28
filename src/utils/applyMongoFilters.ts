@@ -24,7 +24,7 @@ export function applyMongoFilters(input: Record<string, any> = {}, metadata: Met
 
     for (const [fieldKey, value] of Object.entries(input)) {
         const [fieldName, op] = extractFieldAndOp(fieldKey);
-        logger.info(`Processing field: ${fieldKey} with value: ${value}`);
+        logger.info?.(`Processing field: ${fieldKey} with value: ${value}`);
         logger.debug?.(`Resolved as field: ${fieldName}, op: ${op}`);
 
         const fieldDef = metadata.fields[fieldName];

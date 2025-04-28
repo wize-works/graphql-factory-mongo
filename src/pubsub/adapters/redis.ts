@@ -6,7 +6,7 @@
 // import { getLogger } from '../../utils/logger'
 
 // const logger = getLogger()
-// logger.info('Using Redis PubSub adapter')
+// logger.info?.('Using Redis PubSub adapter')
 
 // export const redisPubSub = new RedisPubSub({
 //   publisher: new Redis(),

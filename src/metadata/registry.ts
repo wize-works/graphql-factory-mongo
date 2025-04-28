@@ -8,7 +8,7 @@ const logger = getLogger();
 const metadataRegistry = new Map<string, Metadata>();
 
 export function registerMetadata(key: SchemaKey, metadata: Metadata): void {
-    logger.info('Registered schema metadata', key);
+    logger.info?.('Registered schema metadata', key);
     metadataRegistry.set(toSchemaKeyString(key), metadata);
 }
 
@@ -17,6 +17,6 @@ export function getMetadata(key: SchemaKey): Metadata | undefined {
 }
 
 export function clearMetadata(key: SchemaKey): void {
-    logger.info('Cleared schema metadata', key);
+    logger.info?.('Cleared schema metadata', key);
     metadataRegistry.delete(toSchemaKeyString(key));
 }

@@ -10,7 +10,7 @@ const inputTypeRegistry = new Map<string, GraphQLInputObjectType>();
 const logger = getLogger();
 
 export function registerObjectType(key: SchemaKey, type: GraphQLObjectType) {
-    logger.info('Registered GraphQLObjectType', key);
+    logger.info?.('Registered GraphQLObjectType', key);
     objectTypeRegistry.set(toSchemaKeyString(key), type);
 }
 
@@ -19,7 +19,7 @@ export function getObjectType(key: SchemaKey): GraphQLObjectType | undefined {
 }
 
 export function registerInputType(key: SchemaKey, inputType: GraphQLInputObjectType) {
-    logger.info('Registered GraphQLInputObjectType', key);
+    logger.info?.('Registered GraphQLInputObjectType', key);
     inputTypeRegistry.set(toSchemaKeyString(key), inputType);
 }
 
@@ -28,8 +28,8 @@ export function getInputType(key: SchemaKey): GraphQLInputObjectType | undefined
 }
 
 export function clearTypeCache(key: SchemaKey) {
-    logger.info('Clearing GraphQLObjectType from cache', key);
+    logger.info?.('Clearing GraphQLObjectType from cache', key);
     objectTypeRegistry.delete(toSchemaKeyString(key));
-    logger.info('Clearing GraphQLInputObjectType from cache', key);
+    logger.info?.('Clearing GraphQLInputObjectType from cache', key);
     inputTypeRegistry.delete(toSchemaKeyString(key));
 }

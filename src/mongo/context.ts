@@ -14,8 +14,8 @@ export async function createContext(mongo: MongoClient, req: any): Promise<Reque
     const user = req.user || null;
     const tenantId = req.headers['x-tenant-id'] || undefined;
 
-    if (user) logger.info('Context initialized with user', { userId: user.id });
-    if (tenantId) logger.info('Context initialized with tenant', { tenantId });
+    if (user) logger.info?.('Context initialized with user', { userId: user.id });
+    if (tenantId) logger.info?.('Context initialized with tenant', { tenantId });
 
     return {
         mongo,

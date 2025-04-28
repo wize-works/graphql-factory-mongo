@@ -21,7 +21,7 @@ export function generateSubscriptions(key: SchemaKey, metadata: Metadata): Graph
             type,
             subscribe: (_, __, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:subscribe`);
-                logger.info(`Subscribed: on${key.table}Created`);
+                logger.info?.(`Subscribed: on${key.table}Created`);
                 return pubsub.asyncIterableIterator(`${key.table}_CREATED`);
             },
             resolve: (payload: any) => payload
@@ -33,7 +33,7 @@ export function generateSubscriptions(key: SchemaKey, metadata: Metadata): Graph
             type,
             subscribe: (_, __, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:subscribe`);
-                logger.info(`Subscribed: on${key.table}Updated`);
+                logger.info?.(`Subscribed: on${key.table}Updated`);
                 return pubsub.asyncIterableIterator(`${key.table}_UPDATED`);
             },
             resolve: (payload: any) => payload
@@ -45,7 +45,7 @@ export function generateSubscriptions(key: SchemaKey, metadata: Metadata): Graph
             type,
             subscribe: (_, __, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:subscribe`);
-                logger.info(`Subscribed: on${key.table}Deleted`);
+                logger.info?.(`Subscribed: on${key.table}Deleted`);
                 return pubsub.asyncIterableIterator(`${key.table}_DELETED`);
             },
             resolve: (payload: any) => payload

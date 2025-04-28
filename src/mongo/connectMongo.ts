@@ -11,7 +11,7 @@ export async function connectMongo(uri: string): Promise<MongoClient> {
     if (!client) {
         client = new MongoClient(uri);
         await client.connect();
-        logger.info('[MongoDB] Connected', { uri });
+        logger.info?.('[MongoDB] Connected', { uri });
     }
 
     return client;
