@@ -15,6 +15,7 @@ import { GraphQLDateTime, GraphQLDate } from 'graphql-scalars'
 import { Metadata } from '../metadata/types'
 import { SchemaKey, toSchemaKeyString } from '../metadata/schemaKey'
 import { getLogger } from '../utils/logger'
+import { capitalizeFirstLetter } from '../utils/capitalize'
 
 const logger = getLogger()
 const inputTypeRegistry = new Map<string, GraphQLInputObjectType>()
@@ -66,7 +67,7 @@ export function createGraphQLInputType(
     }, {} as Record<string, any>)
 
     const inputType = new GraphQLInputObjectType({
-        name: `${name}_${mode}`,
+        name: `${capitalizeFirstLetter(name)}${capitalizeFirstLetter(mode)}`,
         fields
     })
 
@@ -112,9 +113,9 @@ function resolveInputType(
             }
             const enumSuffix =
                 mode === 'filter' ? '_Filter' :
-                mode === 'sort' ? '_Sort' :
-                mode === 'input' ? '_Input' :
-                '';
+                    mode === 'sort' ? '_Sort' :
+                        mode === 'input' ? '_Input' :
+                            '';
 
 
             return new GraphQLEnumType({
@@ -129,13 +130,16 @@ function resolveInputType(
     }
 }
 
-export const PagingInput = new GraphQLInputObjectType({
-    name: 'PagingInput',
-    fields: {
-        limit: { type: GraphQLInt, defaultValue: 20 },
-        offset: { type: GraphQLInt, defaultValue: 0 }
-    }
-});
+
+export function createPagingInputType(name: string): GraphQLInputObjectType {
+    return new GraphQLInputObjectType({
+        name: `${capitalizeFirstLetter(name)}Paging`,
+        fields: {
+            limit: { type: GraphQLInt, defaultValue: 20 },
+            offset: { type: GraphQLInt, defaultValue: 0 }
+        }
+    });
+}
 
 export function clearInputRegistry() {
     inputTypeRegistry.clear()

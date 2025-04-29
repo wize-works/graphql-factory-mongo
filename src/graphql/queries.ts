@@ -9,7 +9,7 @@ import {
     GraphQLObjectType
 } from 'graphql';
 import { createGraphQLType } from './types';
-import { createGraphQLInputType, PagingInput } from './inputs';
+import { createGraphQLInputType, createPagingInputType } from './inputs';
 import { Metadata } from '../metadata/types';
 import { getLogger } from '../utils/logger';
 import { getTracer } from '../utils/tracing';
@@ -62,7 +62,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
             args: {
                 filter: { type: filterType },
                 sort: { type: sortType },
-                paging: { type: PagingInput }
+                paging: { type: createPagingInputType(key.table) }
             },
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:read`);
