@@ -25,6 +25,7 @@ export * from './utils/logger';
 export * from './utils/tracing';
 export * from './utils/requireScope';
 export * from './utils/pluralize';
+export * from './errors';
 export { loadSchemasFromMongo } from './utils/loadSchemas';
 export { buildMergedSchema } from './schema/merge';
 export * from './server/authContext';
