@@ -8,6 +8,8 @@ import {
     GraphQLInt,
     GraphQLFloat,
     GraphQLEnumType,
+    GraphQLList,
+    GraphQLType,
 } from 'graphql';
 import { GraphQLDateTime, GraphQLDate } from 'graphql-scalars';
 import { Metadata } from '../metadata/types';
@@ -50,7 +52,7 @@ export function createGraphQLType(
     return type;
 }
 
-function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey) {
+function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey): GraphQLType {
     switch (fieldDef.type) {
         case 'uuid':
         case 'id':
@@ -75,6 +77,12 @@ function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey) {
         case 'double':
         case 'decimal':
             return GraphQLFloat;
+        case 'array':
+            if (!fieldDef.items) {
+                throw new Error(`Missing items for array field ${fieldName}`);
+            }
+            const itemType: GraphQLType = resolveGraphQLType(fieldDef.items, fieldName, key);
+            return new GraphQLList(itemType);
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
                 throw new Error(

@@ -10,6 +10,7 @@ import {
     GraphQLEnumType,
     GraphQLList,
     GraphQLNonNull,
+    GraphQLInputType,
 } from 'graphql';
 import { GraphQLDateTime, GraphQLDate } from 'graphql-scalars';
 import { Metadata } from '../metadata/types';
@@ -93,7 +94,7 @@ function resolveInputType(
     fieldName: string,
     key: SchemaKey,
     mode: 'input' | 'filter' | 'sort'
-) {
+): GraphQLInputType {
     switch (fieldDef.type) {
         case 'uuid':
         case 'id':
@@ -119,6 +120,12 @@ function resolveInputType(
         case 'decimal':
         case 'double':
             return GraphQLFloat; // Decimal/Double is treated as float for input
+        case 'array':
+            if (!fieldDef.items) {
+                throw new Error(`Missing items for array field ${fieldName}`);
+            }
+            const itemType: GraphQLInputType = resolveInputType(fieldDef.items, fieldName, key, mode);
+            return new GraphQLList(itemType);
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
                 throw new Error(
@@ -129,10 +136,10 @@ function resolveInputType(
                 mode === 'filter'
                     ? '_Filter'
                     : mode === 'sort'
-                    ? '_Sort'
-                    : mode === 'input'
-                    ? '_Input'
-                    : '';
+                        ? '_Sort'
+                        : mode === 'input'
+                            ? '_Input'
+                            : '';
 
             return new GraphQLEnumType({
                 name: `${key.table}_${fieldName}_Enum${enumSuffix}`,
