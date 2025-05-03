@@ -109,6 +109,8 @@ function resolveInputType(
             return GraphQLDate;
         case 'time':
             return GraphQLString; // Time is treated as string for input
+        case 'timestamp':
+            return GraphQLString; // Timestamp is treated as string for input
         case 'boolean':
             return GraphQLBoolean;
         case 'int':

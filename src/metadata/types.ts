@@ -17,7 +17,9 @@ export type FieldType =
     | 'uuid'
     | 'id'
     | 'json'
-    | 'enum';
+    | 'enum'
+    | 'array'
+    | 'object';
 
 export interface RelationDefinition {
     model: string;
