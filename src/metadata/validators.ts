@@ -4,7 +4,7 @@ import { Metadata, FieldType } from './types';
 import { getLogger } from '../utils/logger';
 
 const allowedTypes: FieldType[] = [
-    'string', 'text', 'json', 'number', 'integer', 'int', 'float', 'double', 'decimal', 'datetime', 'date', 'time', 'timestamp', 'boolean', 'uuid', 'enum'
+    'string', 'text', 'json', 'number', 'integer', 'int', 'float', 'double', 'decimal', 'datetime', 'date', 'time', 'timestamp', 'boolean', 'uuid', 'enum', 'array', 'id',
 ];
 
 export function validateMetadata(name: string, metadata: Metadata): void {
