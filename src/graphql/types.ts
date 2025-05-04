@@ -39,7 +39,9 @@ export function createGraphQLType(
             };
             return acc;
         },
-        {}
+        {
+            _id: { type: GraphQLID },
+        }
     );
 
     const type = new GraphQLObjectType({
@@ -58,6 +60,7 @@ function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey): G
         case 'id':
             return GraphQLID;
         case 'json':
+        case 'jsonb':
         case 'string':
         case 'text':
             return GraphQLString;
