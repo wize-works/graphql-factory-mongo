@@ -17,6 +17,31 @@ import { capitalizeFirstLetter } from '../utils/capitalize';
 import { pluralize } from '../utils/pluralize';
 import { ObjectId } from 'mongodb';
 
+function coerceInputValues(input: Record<string, any>, metadata: Metadata): Record<string, any> {
+    const output: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(input)) {
+        const field = metadata.fields?.[key];
+        if (!field) {
+            output[key] = value;
+            continue;
+        }
+
+        const type = field.type;
+
+        if ((type === 'int' || type === 'number') && typeof value === 'string') {
+            const coerced = Number(value);
+            output[key] = isNaN(coerced) ? null : coerced;
+        } else if (value === '' && !field.required) {
+            output[key] = null;
+        } else {
+            output[key] = value;
+        }
+    }
+
+    return output;
+}
+
 export function generateMutations(
     key: SchemaKey,
     metadata: Metadata
@@ -52,8 +77,9 @@ export function generateMutations(
                         delete args.input.tenantId; // Remove tenantId from input if present
                         delete args.input._id; // Remove id from input if present
 
+                        const sanitizedInput = coerceInputValues(args.input, metadata);
                         const doc = {
-                            ...args.input,
+                            ...sanitizedInput,
                             //...(metadata.tenantScoped ? { tenantId: context.tenantId } : {}),
                             createdAt: new Date(),
                             createdBy: context.user?.id || 'system',
@@ -92,9 +118,11 @@ export function generateMutations(
                         delete args.input.tenantId; // Remove tenantId from input if present
                         delete args.input._id; // Remove id from input if present
 
+                        const sanitizedInput = coerceInputValues(args.input, metadata);
+
                         await collection.updateOne(filter, {
                             $set: {
-                                ...args.input,
+                                ...sanitizedInput,
                                 updatedAt: new Date(),
                                 updatedBy: context.user?.id || 'system',
                                 tenantId: context.tenantId,
