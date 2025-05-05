@@ -4,10 +4,11 @@ import { getLogger } from './logger';
 const logger = getLogger();
 
 const KNOWN_OPERATORS = new Set([
-    'eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'contains', 'startsWith', 'endsWith'
+    'eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'in', 'contains', 'startsWith', 'endsWith'
 ]);
 
 function extractFieldAndOp(fieldName: string): [string, string | null] {
+    logger.debug?.(`extractFieldAndOp called with fieldName: ${fieldName}`);
     const parts = fieldName.split('_');
     if (parts.length > 1) {
         const op = parts[parts.length - 1];
@@ -28,7 +29,7 @@ export function applyMongoFilters(input: Record<string, any> = {}, metadata: Met
 
         const fieldDef = metadata.fields[fieldName];
         if (!fieldDef) continue;
-
+        logger.debug?.('op', { op, fieldKey, fieldName, value, fieldDef });
         if (op) {
             const mongoOps: Record<string, any> = {};
             switch (op) {
@@ -55,6 +56,7 @@ export function applyMongoFilters(input: Record<string, any> = {}, metadata: Met
             }
             filter[fieldName] = mongoOps;
         } else if (fieldKey.endsWith('_in')) {
+            logger.debug?.('*****************in*********************', { fieldKey, fieldName, value });
             const field = fieldKey.replace('_in', '');
             filter[field] = { $in: Array.isArray(value) ? value : [value] };
         } else {
