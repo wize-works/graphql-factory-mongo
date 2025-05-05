@@ -210,3 +210,22 @@ npm run semantic-release
 MIT © [WizeWorks](https://github.com/wize-works)
 
 ---
+
+### Filtering with Enums
+
+You can now use the `_in` operator to filter enum fields by providing a list of possible values. For example:
+
+```graphql
+query {
+  findProjects(filter: { status_in: ["PLANNING", "IN_PROGRESS"] }) {
+    count
+    data {
+      _id
+      name
+      status
+    }
+  }
+}
+```
+
+This query will return all projects where the `status` is either `PLANNING` or `IN_PROGRESS`.

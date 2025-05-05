@@ -69,6 +69,9 @@ export function createGraphQLInputType(
                     acc[fieldName + '_gt'] = { type: baseType };
                     acc[fieldName + '_gte'] = { type: baseType };
                 }
+                if (fieldDef.type === 'enum') {
+                    acc[fieldName + '_in'] = { type: new GraphQLList(baseType) }; // Add _in for enums
+                }
             } else {
                 acc[fieldName] = {
                     type: resolveInputType(fieldDef, fieldName, key, mode),

@@ -1,4 +1,3 @@
-
 import { Metadata } from '../metadata/types';
 import { getLogger } from './logger';
 
@@ -55,6 +54,9 @@ export function applyMongoFilters(input: Record<string, any> = {}, metadata: Met
                     mongoOps[`$${op}`] = value;
             }
             filter[fieldName] = mongoOps;
+        } else if (fieldKey.endsWith('_in')) {
+            const field = fieldKey.replace('_in', '');
+            filter[field] = { $in: Array.isArray(value) ? value : [value] };
         } else {
             filter[fieldName] = value;
         }
