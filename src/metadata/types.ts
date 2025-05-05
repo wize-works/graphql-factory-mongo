@@ -29,6 +29,7 @@ export interface RelationDefinition {
 }
 
 export interface FieldDefinition {
+    items: any;
     type: FieldType;
     required?: boolean;
     defaultValue?: any;

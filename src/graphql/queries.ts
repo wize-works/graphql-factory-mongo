@@ -65,14 +65,15 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
                 paging: { type: createPagingInputType(key.table) }
             },
             resolve: async (_, args, context) => {
+                console.log('args', args);
                 requireScope(context, `${key.table.toLowerCase()}:read`);
                 return await tracer.startSpan(`query.${key.table}.findAll`, async () => {
                     const db = context.mongo.db(context.database);
                     const collection = db.collection(`${tableName}`);
-                    
+
                     const mongoFilter = applyMongoFilters(args.filter, metadata);
                     mongoFilter.tenantId = context.tenantId;
-
+                    console.log('mongoFilter', mongoFilter);
                     const options: any = {};
                     if (args.sort) {
                         options.sort = Object.entries(args.sort).reduce<Record<string, 1 | -1>>((acc, [field, dir]) => {
