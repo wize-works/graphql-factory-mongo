@@ -131,6 +131,27 @@ function resolveInputType(
             }
             const itemType: GraphQLInputType = resolveInputType(fieldDef.items, fieldName, key, mode);
             return new GraphQLList(itemType);
+        case 'object':
+            // Handle object type by creating a nested input type
+            if (!fieldDef.fields) {
+                throw new Error(`Missing fields for object field ${fieldName}`);
+            }
+
+            const objectTypeName = `${key.table}_${fieldName}_Object${mode === 'filter' ? '_Filter' : mode === 'sort' ? '_Sort' : '_Input'}`;
+            const objFields = Object.entries(fieldDef.fields).reduce(
+                (acc: Record<string, any>, [subFieldName, subFieldDef]: [string, any]) => {
+                    acc[subFieldName] = {
+                        type: resolveInputType(subFieldDef, `${fieldName}_${subFieldName}`, key, mode),
+                    };
+                    return acc;
+                },
+                {}
+            );
+
+            return new GraphQLInputObjectType({
+                name: objectTypeName,
+                fields: objFields,
+            });
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
                 throw new Error(

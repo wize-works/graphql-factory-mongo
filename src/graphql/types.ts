@@ -86,6 +86,29 @@ function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey): G
             }
             const itemType: GraphQLType = resolveGraphQLType(fieldDef.items, fieldName, key);
             return new GraphQLList(itemType);
+        case 'object':
+            // Handle object type by creating a nested object type
+            if (!fieldDef.fields) {
+                throw new Error(`Missing fields for object field ${fieldName}`);
+            }
+
+            const objectTypeName = `${key.table}_${fieldName}_Object`;
+
+            // Create object fields recursively
+            const objFields = Object.entries(fieldDef.fields).reduce(
+                (acc: Record<string, any>, [subFieldName, subFieldDef]: [string, any]) => {
+                    acc[subFieldName] = {
+                        type: resolveGraphQLType(subFieldDef, `${fieldName}_${subFieldName}`, key),
+                    };
+                    return acc;
+                },
+                {}
+            );
+
+            return new GraphQLObjectType({
+                name: objectTypeName,
+                fields: objFields,
+            });
         case 'enum':
             if (!fieldDef.values || !Array.isArray(fieldDef.values)) {
                 throw new Error(
