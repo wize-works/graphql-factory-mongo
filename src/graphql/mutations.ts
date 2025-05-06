@@ -110,11 +110,12 @@ export function generateMutations(
         [`update${capitalizeFirstLetter(key.table)}`]: {
             type,
             args: {
-                id: { type: new GraphQLNonNull(GraphQLString) },
+                id: { type: new GraphQLNonNull(GraphQLID) }, // Changed from GraphQLString to GraphQLID
                 input: { type: new GraphQLNonNull(inputType) },
             },
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:update`);
+                logger.info?.(`Updating ${key.table}`, { id: args.id, input: args.input });
                 try {
                     return await tracer.startSpan(
                         `mutation.${key.table}.update`,
