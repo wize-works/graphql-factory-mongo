@@ -1,4 +1,4 @@
-import { Metadata } from '../metadata/types';
+import { FieldDefinition, Metadata } from '../metadata/types';
 import { getLogger } from './logger';
 
 const logger = getLogger();
@@ -27,9 +27,31 @@ export function applyMongoFilters(input: Record<string, any> = {}, metadata: Met
         logger.info?.(`Processing field: ${fieldKey} with value: ${value}`);
         logger.debug?.(`Resolved as field: ${fieldName}, op: ${op}`);
 
-        const fieldDef = metadata.fields[fieldName];
+        // Check for nested object field paths (e.g., "address.city")
+        const fieldPath = fieldName.split('.');
+        let fieldDef = metadata.fields[fieldPath[0]];
+
+        // Handle nested fields in objects
+        if (fieldPath.length > 1 && fieldDef && fieldDef.type === 'object') {
+            // Navigate through nested object structure to find the field definition
+            let nestedFieldDef: FieldDefinition | null = fieldDef;
+            for (let i = 1; i < fieldPath.length; i++) {
+                if (nestedFieldDef && nestedFieldDef.fields && nestedFieldDef.fields[fieldPath[i]]) {
+                    nestedFieldDef = nestedFieldDef.fields[fieldPath[i]];
+                } else {
+                    nestedFieldDef = null;
+                    break;
+                }
+            }
+            if (nestedFieldDef) {
+                fieldDef = nestedFieldDef;
+            }
+        }
+
         if (!fieldDef) continue;
+
         logger.debug?.('op', { op, fieldKey, fieldName, value, fieldDef });
+
         if (op) {
             const mongoOps: Record<string, any> = {};
             switch (op) {

@@ -4,7 +4,8 @@ import { Metadata, FieldType } from './types';
 import { getLogger } from '../utils/logger';
 
 const allowedTypes: FieldType[] = [
-    'string', 'text', 'json', 'number', 'integer', 'int', 'float', 'double', 'decimal', 'datetime', 'date', 'time', 'timestamp', 'boolean', 'uuid', 'enum', 'array', 'id',
+    'string', 'text', 'json', 'number', 'integer', 'int', 'float', 'double', 'decimal',
+    'datetime', 'date', 'time', 'timestamp', 'boolean', 'uuid', 'enum', 'array', 'id', 'object',
 ];
 
 export function validateMetadata(name: string, metadata: Metadata): void {
@@ -26,6 +27,14 @@ export function validateMetadata(name: string, metadata: Metadata): void {
             if (!allowedTypes.includes(def.items.type) && def.items.type !== 'object') {
                 logger.error?.(`Invalid item type '${def.items.type}' for array field '${field}' in schema '${name}'`);
                 throw new Error(`Invalid item type '${def.items.type}' for array field '${field}' in schema '${name}'`);
+            }
+        }
+
+        // Additional validation for object types
+        if (def.type === 'object') {
+            if (!def.fields || typeof def.fields !== 'object') {
+                logger.error?.(`Object field '${field}' in schema '${name}' must define subfields`);
+                throw new Error(`Object field '${field}' in schema '${name}' must define subfields`);
             }
         }
     }
