@@ -65,36 +65,46 @@ export function generateMutations(
             },
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:create`);
-                return await tracer.startSpan(
-                    `mutation.${key.table}.create`,
-                    async () => {
-                        const db = context.mongo.db(context.database);
-                        const collection = db.collection(`${tableName}`);
+                logger.info?.(`Creating ${key.table}`, { input: args.input });
+                try {
+                    return await tracer.startSpan(
+                        `mutation.${key.table}.create`,
+                        async () => {
+                            const db = context.mongo.db(context.database);
+                            const collection = db.collection(`${tableName}`);
 
-                        if (metadata.tenantScoped && !context.tenantId) {
-                            throw new Error('Missing tenantId in context');
+                            if (metadata.tenantScoped && !context.tenantId) {
+                                throw new Error('Missing tenantId in context');
+                            }
+                            delete args.input.tenantId; // Remove tenantId from input if present
+                            delete args.input._id; // Remove id from input if present
+
+                            const sanitizedInput = coerceInputValues(args.input, metadata);
+                            logger.info?.(`Sanitized input`, { sanitizedInput });
+
+                            const doc = {
+                                ...sanitizedInput,
+                                createdAt: new Date(),
+                                createdBy: context.user?.id || 'system',
+                                tenantId: context.tenantId,
+                            };
+
+                            const result = await collection.insertOne(doc);
+                            logger.info?.(`Created ${key.table}`, {
+                                id: result.insertedId,
+                            });
+                            return await collection.findOne({
+                                _id: result.insertedId,
+                            });
                         }
-                        delete args.input.tenantId; // Remove tenantId from input if present
-                        delete args.input._id; // Remove id from input if present
-
-                        const sanitizedInput = coerceInputValues(args.input, metadata);
-                        const doc = {
-                            ...sanitizedInput,
-                            //...(metadata.tenantScoped ? { tenantId: context.tenantId } : {}),
-                            createdAt: new Date(),
-                            createdBy: context.user?.id || 'system',
-                            tenantId: context.tenantId,
-                        };
-
-                        const result = await collection.insertOne(doc);
-                        logger.info?.(`Created ${key.table}`, {
-                            id: result.insertedId,
-                        });
-                        return await collection.findOne({
-                            _id: result.insertedId,
-                        });
+                    );
+                } catch (error) {
+                    logger.error?.(`Error creating ${key.table}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    if (error instanceof Error) {
+                        throw new Error(`Failed to create ${key.table}: ${error.message}`);
                     }
-                );
+                    throw new Error(`Failed to create ${key.table}: An unknown error occurred`);
+                }
             },
         },
         [`update${capitalizeFirstLetter(key.table)}`]: {
@@ -105,33 +115,41 @@ export function generateMutations(
             },
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:update`);
-                return await tracer.startSpan(
-                    `mutation.${key.table}.update`,
-                    async () => {
-                        const db = context.mongo.db(context.database);
-                        const collection = db.collection(`${tableName}`);
+                try {
+                    return await tracer.startSpan(
+                        `mutation.${key.table}.update`,
+                        async () => {
+                            const db = context.mongo.db(context.database);
+                            const collection = db.collection(`${tableName}`);
 
-                        const filter: Record<string, any> = {
-                            _id: new ObjectId(args.id),
-                        };
+                            const filter: Record<string, any> = {
+                                _id: new ObjectId(args.id),
+                            };
 
-                        delete args.input.tenantId; // Remove tenantId from input if present
-                        delete args.input._id; // Remove id from input if present
+                            delete args.input.tenantId; // Remove tenantId from input if present
+                            delete args.input._id; // Remove id from input if present
 
-                        const sanitizedInput = coerceInputValues(args.input, metadata);
+                            const sanitizedInput = coerceInputValues(args.input, metadata);
 
-                        await collection.updateOne(filter, {
-                            $set: {
-                                ...sanitizedInput,
-                                updatedAt: new Date(),
-                                updatedBy: context.user?.id || 'system',
-                                tenantId: context.tenantId,
-                            },
-                        });
-                        logger.info?.(`Updated ${key.table}`, { id: args.id });
-                        return await collection.findOne({ _id: args.id });
+                            await collection.updateOne(filter, {
+                                $set: {
+                                    ...sanitizedInput,
+                                    updatedAt: new Date(),
+                                    updatedBy: context.user?.id || 'system',
+                                    tenantId: context.tenantId,
+                                },
+                            });
+                            logger.info?.(`Updated ${key.table}`, { id: args.id });
+                            return await collection.findOne({ _id: new ObjectId(args.id) });
+                        }
+                    );
+                } catch (error) {
+                    logger.error?.(`Error updating ${key.table}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    if (error instanceof Error) {
+                        throw new Error(`Failed to update ${key.table}: ${error.message}`);
                     }
-                );
+                    throw new Error(`Failed to update ${key.table}: An unknown error occurred`);
+                }
             },
         },
         [`delete${capitalizeFirstLetter(key.table)}`]: {
@@ -141,26 +159,36 @@ export function generateMutations(
             },
             resolve: async (_, args, context) => {
                 requireScope(context, `${key.table.toLowerCase()}:delete`);
-                return await tracer.startSpan(
-                    `mutation.${key.table}.delete`,
-                    async () => {
-                        const db = context.mongo.db(context.database);
-                        const collection = db.collection(`${tableName}`);
+                try {
+                    return await tracer.startSpan(
+                        `mutation.${key.table}.delete`,
+                        async () => {
+                            const db = context.mongo.db(context.database);
+                            const collection = db.collection(`${tableName}`);
 
-                        const filter: Record<string, any> = {
-                            _id: new ObjectId(args.id),
-                        };
-                        //if (metadata.tenantScoped && context.tenantId) {
-                        //filter.tenantId = context.tenantId;
-                        //}
-                        filter.tenantId = context.tenantId;
+                            const filter: Record<string, any> = {
+                                _id: new ObjectId(args.id),
+                                tenantId: context.tenantId,
+                            };
 
-                        const doc = await collection.findOne(filter);
-                        await collection.deleteOne(filter);
-                        logger.info?.(`Deleted ${key.table}`, { id: args.id });
-                        return doc;
+                            const doc = await collection.findOne(filter);
+                            if (!doc) {
+                                throw new Error(`${key.table} with ID ${args.id} not found`);
+                            }
+
+                            await collection.deleteOne(filter);
+                            logger.info?.(`Deleted ${key.table}`, { id: args.id });
+                            return doc;
+                        }
+                    );
+                } catch (error) {
+                    if (error instanceof Error) {
+                        logger.error?.(`Error deleting ${key.table}: ${error.message}`);
+                    } else {
+                        logger.error?.(`Error deleting ${key.table}: Unknown error`);
                     }
-                );
+                    throw new Error(`Failed to delete ${key.table}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                }
             },
         },
     };
