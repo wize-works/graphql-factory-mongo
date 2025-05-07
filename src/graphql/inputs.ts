@@ -82,12 +82,17 @@ export function createGraphQLInputType(
         {} as Record<string, any>
     );
 
+    // Check if name already ends with the mode to avoid duplication (e.g., OrganizationInputInput)
+    const typeName = name.endsWith(capitalizeFirstLetter(mode))
+        ? name
+        : `${name}${capitalizeFirstLetter(mode)}`;
+
     const inputType = new GraphQLInputObjectType({
-        name: `${capitalizeFirstLetter(name)}${capitalizeFirstLetter(mode)}`,
+        name: typeName,
         fields,
     });
 
-    //logger.debug?.(`Created GraphQLInputObjectType for`, { key, mode} )
+    logger.debug?.(`Created GraphQLInputObjectType ${typeName}`, { key, mode });
     inputTypeRegistry.set(cacheKey, inputType);
     return inputType;
 }
