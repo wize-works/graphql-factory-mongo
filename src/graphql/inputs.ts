@@ -29,6 +29,16 @@ export function createGenericModelType(metadata: Metadata, key: SchemaKey): Grap
         return inputTypeRegistry.get(cacheKey)!;
     }
 
+    // Format the table name:
+    // 1. Replace hyphens and underscores with spaces
+    // 2. Capitalize each word
+    // 3. Remove all spaces
+    const formattedName = key.table
+        .replace(/[-_]/g, ' ')
+        .split(' ')
+        .map(word => capitalizeFirstLetter(word))
+        .join('');
+
     const fields = Object.entries(metadata.fields).reduce(
         (acc, [fieldName, fieldDef]) => {
             if (fieldDef.systemReserved) {
@@ -44,12 +54,13 @@ export function createGenericModelType(metadata: Metadata, key: SchemaKey): Grap
         {} as Record<string, any>
     );
 
+    // Use formatted table name for the input type
     const modelType = new GraphQLInputObjectType({
-        name: 'Model',
+        name: formattedName,
         fields,
     });
 
-    logger.debug?.('Created generic Model input type for', { table: key.table });
+    logger.debug?.('Created input type', { name: formattedName, table: key.table });
     inputTypeRegistry.set(cacheKey, modelType);
     return modelType;
 }
