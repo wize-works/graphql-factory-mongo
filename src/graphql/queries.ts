@@ -9,11 +9,7 @@ import {
     GraphQLObjectType
 } from 'graphql';
 import { createGraphQLType } from './types';
-import {
-    createGenericFilterType,
-    createGenericSortType,
-    createGenericPagingType
-} from './inputs';
+import { createGraphQLInputType, createPagingInputType } from './inputs';
 import { Metadata } from '../metadata/types';
 import { getLogger } from '../utils/logger';
 import { getTracer } from '../utils/tracing';
@@ -29,13 +25,11 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
     const tracer = getTracer();
     const type = createGraphQLType(key, metadata);
 
-    // Use generic types for filter, sort, and paging
-    const filterType = createGenericFilterType(metadata, key);
-    const sortType = createGenericSortType(metadata);
-    const pagingType = createGenericPagingType();
-
-    const tableName = pluralize(key.table.toLowerCase());
+    // Ensure capitalized table name for filter and sort types
     const capitalizedTable = capitalizeFirstLetter(key.table);
+    const filterType = createGraphQLInputType(capitalizedTable, metadata, key, 'filter');
+    const sortType = createGraphQLInputType(capitalizedTable, metadata, key, 'sort');
+    const tableName = pluralize(key.table.toLowerCase());
 
     const ListResultType = new GraphQLObjectType({
         name: `${capitalizedTable}ListResult`,
@@ -71,9 +65,10 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
             args: {
                 filter: { type: filterType },
                 sort: { type: sortType },
-                paging: { type: pagingType }
+                paging: { type: createPagingInputType(key.table) }
             },
             resolve: async (_, args, context) => {
+                console.log('args', args);
                 requireScope(context, `${key.table.toLowerCase()}:read`);
                 return await tracer.startSpan(`query.${key.table}.findAll`, async () => {
                     const db = context.mongo.db(context.database);
@@ -81,8 +76,7 @@ export function generateQueries(key: SchemaKey, metadata: Metadata): GraphQLFiel
 
                     const mongoFilter = applyMongoFilters(args.filter, metadata);
                     mongoFilter.tenantId = context.tenantId;
-                    logger.debug?.('Applied mongo filters', { mongoFilter });
-
+                    console.log('mongoFilter', mongoFilter);
                     const options: any = {};
                     if (args.sort) {
                         options.sort = Object.entries(args.sort).reduce<Record<string, 1 | -1>>((acc, [field, dir]) => {

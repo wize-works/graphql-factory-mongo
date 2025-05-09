@@ -6,9 +6,9 @@ import { MongoClient } from 'mongodb';
 import { createYoga } from 'graphql-yoga';
 import { createServerSchema, createServerContext, registerSchemaRoutes, registerAdminRoutes } from '../../src';
 import { ILogger } from '../../src';
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3015;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
-const database = process.env.DB_NAME || 'wize-log'; // Use the database name you want to connect to
+const database = process.env.DB_NAME || 'wize-organization'; // Use the database name you want to connect to
 const mongoClient = new MongoClient(MONGO_URI);
 let currentSchemas: any = null;
 

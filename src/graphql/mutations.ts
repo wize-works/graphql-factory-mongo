@@ -7,7 +7,7 @@ import {
     GraphQLString,
 } from 'graphql';
 import { createGraphQLType } from './types';
-import { createGenericModelType } from './inputs';
+import { createGraphQLInputType } from './inputs';
 import { getLogger } from '../utils/logger';
 import { getTracer } from '../utils/tracing';
 import { Metadata } from '../metadata/types';
@@ -51,8 +51,11 @@ export function generateMutations(
     const tableName = pluralize(key.table.toLowerCase());
 
     const type = createGraphQLType(key, metadata);
-    // Use generic Model type for inputs
-    const inputType = createGenericModelType(metadata, key);
+    const inputType = createGraphQLInputType(
+        `${key.table}Input`,
+        metadata,
+        key
+    );
 
     return {
         [`create${capitalizeFirstLetter(key.table)}`]: {
@@ -107,7 +110,7 @@ export function generateMutations(
         [`update${capitalizeFirstLetter(key.table)}`]: {
             type,
             args: {
-                id: { type: new GraphQLNonNull(GraphQLID) },
+                id: { type: new GraphQLNonNull(GraphQLID) }, // Changed from GraphQLString to GraphQLID
                 input: { type: new GraphQLNonNull(inputType) },
             },
             resolve: async (_, args, context) => {
