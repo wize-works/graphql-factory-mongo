@@ -96,6 +96,8 @@ export function createGenericFilterType(metadata: Metadata, key: SchemaKey): Gra
             }
 
             if (fieldDef.type === 'enum') {
+                acc[fieldName + '_eq'] = { type: baseType };
+                acc[fieldName + '_neq'] = { type: baseType };
                 acc[fieldName + '_in'] = { type: new GraphQLList(baseType) };
             }
 
@@ -272,7 +274,7 @@ function resolveInputType(
                 throw new Error(`Missing fields for object field ${fieldName}`);
             }
 
-            const objectTypeName = `${key.table}_${fieldName}_Object${mode === 'filter' ? '_Filter' : mode === 'sort' ? '_Sort' : '_Input'}`;
+            const objectTypeName = `${capitalizeFirstLetter(key.table)}${capitalizeFirstLetter(fieldName)}Object${mode === 'filter' ? 'Filter' : mode === 'sort' ? 'Sort' : 'Input'}`;
             const objFields = Object.entries(fieldDef.fields).reduce(
                 (acc: Record<string, any>, [subFieldName, subFieldDef]: [string, any]) => {
                     acc[subFieldName] = {
@@ -303,7 +305,7 @@ function resolveInputType(
                             : '';
 
             return new GraphQLEnumType({
-                name: `${key.table}_${fieldName}_Enum${enumSuffix}`,
+                name: `${capitalizeFirstLetter(key.table)}${capitalizeFirstLetter(fieldName)}Enum${enumSuffix}`,
                 values: fieldDef.values.reduce(
                     (acc: Record<string, { value: string }>, val: string) => {
                         acc[val.trim().replace(' ', '_').toLowerCase()] = {

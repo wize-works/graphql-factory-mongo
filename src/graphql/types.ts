@@ -15,6 +15,7 @@ import { GraphQLDateTime, GraphQLDate } from 'graphql-scalars';
 import { Metadata } from '../metadata/types';
 import { SchemaKey, toSchemaKeyString } from '../metadata/schemaKey';
 import { getLogger } from '../utils/logger';
+import { capitalizeFirstLetter } from '../utils/capitalize';
 
 const logger = getLogger();
 const typeRegistry = new Map<string, GraphQLObjectType>();
@@ -92,13 +93,13 @@ function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey): G
                 throw new Error(`Missing fields for object field ${fieldName}`);
             }
 
-            const objectTypeName = `${key.table}_${fieldName}_Object`;
+            const objectTypeName = `${capitalizeFirstLetter(key.table)}${capitalizeFirstLetter(fieldName)}Object`;
 
             // Create object fields recursively
             const objFields = Object.entries(fieldDef.fields).reduce(
                 (acc: Record<string, any>, [subFieldName, subFieldDef]: [string, any]) => {
                     acc[subFieldName] = {
-                        type: resolveGraphQLType(subFieldDef, `${fieldName}_${subFieldName}`, key),
+                        type: resolveGraphQLType(subFieldDef, `${capitalizeFirstLetter(fieldName)}${capitalizeFirstLetter(subFieldName)}`, key),
                     };
                     return acc;
                 },
@@ -121,7 +122,7 @@ function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey): G
                 : '';
 
             return new GraphQLEnumType({
-                name: `${key.table}_${fieldName}_Enum${enumSuffix}`,
+                name: `${capitalizeFirstLetter(key.table)}${capitalizeFirstLetter(fieldName)}Enum${enumSuffix}`,
                 values: fieldDef.values.reduce(
                     (acc: Record<string, { value: string }>, val: string) => {
                         acc[val.trim().replace(' ', '_').toLowerCase()] = {
