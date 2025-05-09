@@ -297,11 +297,11 @@ function resolveInputType(
             }
             const enumSuffix =
                 mode === 'filter'
-                    ? '_Filter'
+                    ? 'Filter'
                     : mode === 'sort'
-                        ? '_Sort'
+                        ? 'Sort'
                         : mode === 'input'
-                            ? '_Input'
+                            ? 'Input'
                             : '';
 
             return new GraphQLEnumType({

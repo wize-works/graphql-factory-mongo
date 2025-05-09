@@ -118,7 +118,7 @@ function resolveGraphQLType(fieldDef: any, fieldName: string, key: SchemaKey): G
             }
 
             const enumSuffix = fieldDef.modeSuffix
-                ? `_${fieldDef.modeSuffix}`
+                ? `${fieldDef.modeSuffix}`
                 : '';
 
             return new GraphQLEnumType({
